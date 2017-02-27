@@ -1,5 +1,5 @@
 {
-  "name": "ems-plg/lti",
+  "name": "ttek-plg/ems-lti",
   "type": "ttek-plugin",
   "description": "LTI Plugin for the EMS III",
   "keywords": [
