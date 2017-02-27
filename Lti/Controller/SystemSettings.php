@@ -36,8 +36,8 @@ class SystemSettings extends Iface
         parent::__construct();
         $this->setPageTitle('LDAP Plugin Settings');
 
-        /** @var \lti\Plugin $plugin */
-        $plugin = \lti\Plugin::getInstance();
+        /** @var \Lti\Plugin $plugin */
+        $plugin = \Lti\Plugin::getInstance();
         $this->data = \Tk\Db\Data::create($plugin->getName());
     }
 

@@ -41,8 +41,8 @@ class InstitutionSettings extends Iface
         parent::__construct();
         $this->setPageTitle('LDAP Plugin - Institution Settings');
 
-        /** @var \lti\Plugin $plugin */
-        $plugin = \lti\Plugin::getInstance();
+        /** @var \Lti\Plugin $plugin */
+        $plugin = \Lti\Plugin::getInstance();
         $this->institution = $this->getUser()->getInstitution();
         $this->data = \Tk\Db\Data::create($plugin->getName() . '.institution', $this->institution->getId());
 

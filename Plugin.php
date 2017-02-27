@@ -1,5 +1,5 @@
 <?php
-namespace lti;
+namespace Lti;
 
 
 use Tk\EventDispatcher\EventDispatcher;
@@ -23,7 +23,7 @@ class Plugin extends \App\Plugin\Iface
      */
     static function getInstance()
     {
-        return \Tk\Config::getInstance()->getPluginFactory()->getPlugin('lti');
+        return \Tk\Config::getInstance()->getPluginFactory()->getPlugin('ems-lti');
     }
 
 
