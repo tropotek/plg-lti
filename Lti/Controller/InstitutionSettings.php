@@ -46,6 +46,14 @@ class InstitutionSettings extends Iface
         $this->institution = $this->getUser()->getInstitution();
         $this->data = \Tk\Db\Data::create($plugin->getName() . '.institution', $this->institution->getId());
 
+
+        $db = \App\Factory::getDb();
+        $sql = sprintf("SHOW TABLES LIKE '%slti2\_%' ", $db->escapeString(self::$LTI_DB_PREFIX));
+        $result = $db->query($sql);
+
+        foreach ($result as $row) {
+            vd($result);
+        }
     }
 
     /**

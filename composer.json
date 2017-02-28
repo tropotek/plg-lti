@@ -27,6 +27,7 @@
     }
   },
   "require": {
-    "ttek/tk-installers": "~2.0"
+    "ttek/tk-installers": "~2.0",
+    "imsglobal/lti": "~3.0"
   }
 }
