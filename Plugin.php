@@ -112,7 +112,7 @@ class Plugin extends \App\Plugin\Iface
     }
 
     /**
-     * Return true if the lit plugin is enabled for this institution
+     * Return true if the plugin is enabled for this institution
      *
      * @return bool
      */
@@ -124,7 +124,6 @@ class Plugin extends \App\Plugin\Iface
         }
         $data = self::getInstitutionData();
         if ($data && $data->has(self::LTI_ENABLE)) {
-            vd($data->get(self::LTI_ENABLE));
             return $data->get(self::LTI_ENABLE);
         }
 
