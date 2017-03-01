@@ -13,6 +13,14 @@ use Tk\EventDispatcher\EventDispatcher;
  */
 class Plugin extends \App\Plugin\Iface
 {
+    // Data labels
+    const LTI_STUFF = 'inst.lti.setting';
+    const LTI_ENABLE = 'inst.lti.enable';
+    const LTI_KEY = 'inst.lti.key';
+    const LTI_SECRET = 'inst.lti.secret';
+    const LTI_URL = 'inst.lti.url';
+    const LTI_CURRENT_KEY = 'inst.lti.currentKey';
+    const LTI_CURRENT_ID = 'inst.lti.currentId';
 
     /**
      * @var string
@@ -22,7 +30,17 @@ class Plugin extends \App\Plugin\Iface
     /**
      * @var \IMSGlobal\LTI\ToolProvider\DataConnector\DataConnector_pdo
      */
-    static $dataConnector = null;
+    public static $dataConnector = null;
+
+    /**
+     * @var \IMSGlobal\LTI\ToolProvider\ToolConsumer
+     */
+    public static $ltiConsumer= null;
+
+    /**
+     * @var \Tk\Db\Data
+     */
+    public static $institutionData = null;
 
 
 
@@ -48,6 +66,71 @@ class Plugin extends \App\Plugin\Iface
         return self::$dataConnector;
     }
 
+    /**
+     * @return \Tk\Db\Data
+     */
+    public static function getInstitutionData()
+    {
+        if (\Tk\Config::getInstance()->getUser() && !self::$institutionData) {
+            $institution = \Tk\Config::getInstance()->getUser()->getInstitution();
+            if ($institution)
+                self::$institutionData = \Tk\Db\Data::create(self::getInstance()->getName() . '.institution', $institution->getId());
+        }
+        return self::$institutionData;
+    }
+
+    /**
+     *
+     * @return \IMSGlobal\LTI\ToolProvider\ToolConsumer
+     */
+    public static function getLtiConsumer()
+    {
+        $data = self::getInstitutionData();
+        $key = $data->get(self::LTI_CURRENT_KEY);
+        if ($key === '') $key = null;
+        if (!self::$ltiConsumer && $key) {
+            self::$ltiConsumer = new \IMSGlobal\LTI\ToolProvider\ToolConsumer($key, self::getLtiDataConnector());
+        }
+        return self::$ltiConsumer;
+    }
+
+
+    /**
+     * Check if the LTI key exists
+     *
+     * @param $consumer_key256
+     * @return bool
+     */
+    public static function ltiKeyExists($consumer_key256, $ignoreId = 0)
+    {
+        $db = \App\Factory::getDb();
+        $sql = sprintf('SELECT * FROM %s WHERE consumer_key256 = %s', $db->quoteParameter(self::$LTI_DB_PREFIX.'lti2_consumer'), $db->quote($consumer_key256));
+        if ($ignoreId) {
+            $sql .= sprintf(' AND consumer_pk != %s ', (int)$ignoreId);
+        }
+        return ($db->query($sql)->rowCount() > 0);
+    }
+
+    /**
+     * Return true if the lit plugin is enabled for this institution
+     *
+     * @return bool
+     */
+    public static function isEnabled()
+    {
+        $db = \App\Factory::getDb();
+        if(!$db->tableExists(self::$LTI_DB_PREFIX.'lti2_consumer')) {
+            return false;
+        }
+        $data = self::getInstitutionData();
+        if ($data && $data->has(self::LTI_ENABLE)) {
+            vd($data->get(self::LTI_ENABLE));
+            return $data->get(self::LTI_ENABLE);
+        }
+
+        return false;
+    }
+
 
     // ---- \Tk\Plugin\Iface Interface Methods ----
     
@@ -67,7 +150,8 @@ class Plugin extends \App\Plugin\Iface
 
         /** @var EventDispatcher $dispatcher */
         $dispatcher = \Tk\Config::getInstance()->getEventDispatcher();
-        //$dispatcher->addSubscriber(new \Ldap\Listener\ExampleHandler());
+        $dispatcher->addSubscriber(new \Lti\Listener\AuthHandler());
+        $dispatcher->addSubscriber(new \Lti\Listener\MenuHandler());
 
     }
 
@@ -86,8 +170,11 @@ class Plugin extends \App\Plugin\Iface
 //        $data->set('plugin.email', 'null@unimelb.edu.au');
 //        $data->save();
 
+        vd('Activate');
+
         $config = \Tk\Config::getInstance();
         $db = \App\Factory::getDb();
+
         $migrate = new \Tk\Util\SqlMigrate($db);
         $migrate->setTempPath($config->getTempPath());
         $migrate->migrate(dirname(__FILE__) . '/sql');
@@ -102,19 +189,22 @@ class Plugin extends \App\Plugin\Iface
      */
     function doDeactivate()
     {
-        // Delete any setting in the DB
-//        $data = \Tk\Db\Data::create($this->getName());
-//        $data->clear();
-//        $data->save();
-        $config = \Tk\Config::getInstance();
         $db = \App\Factory::getDb();
 
-        $sql = sprintf("SHOW TABLES LIKE '%slti2\_%' ", $db->escapeString(self::$LTI_DB_PREFIX));
-        $result = $db->query($sql);
+        // Clear the data table of all plugin data
+        $sql = sprintf('DELETE FROM %s WHERE %s LIKE %s', $db->quoteParameter(\Tk\Db\Data::$DB_TABLE), $db->quoteParameter('foreign_key'), $db->quote($this->getName().'%'));
+        $db->query($sql);
 
-        foreach ($result as $row) {
-            vd($result);
+        // Delete all LTI tables.
+        $sql = sprintf("SHOW TABLES LIKE '%slti2\_%%' ", $db->escapeString(\Lti\Plugin::$LTI_DB_PREFIX));
+        $result = $db->query($sql);
+        foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+            $db->dropTable(current($row));
         }
+
+        // Remove migration track
+        $sql = sprintf('DELETE FROM %s WHERE %s LIKE %s', $db->quoteParameter(\Tk\Util\SqlMigrate::$DB_TABLE), $db->quoteParameter('path'), $db->quote('/plugin/' . $this->getName().'/%'));
+        $db->query($sql);
 
     }
 

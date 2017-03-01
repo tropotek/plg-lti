@@ -61,18 +61,22 @@ class Launch extends Iface
             return $this->show();
         }
 
-        $tool = new \Lti\Provider(\Lti\Plugin::getLtiDataConnector(), $this->institution, $this->getConfig()->getEventDispatcher());
-        $_POST['custom_tc_profile_url'] = '';   // Hack to speed up the launch as we do not need this url
-        $tool->handleRequest();
-
-        // TODO: Is this the best place for this error
         $msg = '';
-        if ($tool->message) {
-            $msg .= $tool->message . '<br/>';
+        if(\Lti\Plugin::getInstance()->isActive()) {
+            $tool = new \Lti\Provider(\Lti\Plugin::getLtiDataConnector(), $this->institution, $this->getConfig()->getEventDispatcher());
+            $_POST['custom_tc_profile_url'] = '';   // Hack to speed up the launch as we do not need this url
+            $tool->handleRequest();
+
+            if ($tool->message) {
+                $msg .= $tool->message . '<br/>';
+            }
+            if ($tool->reason) {
+                $msg .= $tool->reason . '<br/>';
+            }
+        } else {
+            $msg = 'LTI is not enabled for this Institution';
         }
-        if ($tool->reason) {
-            $msg .= $tool->reason . '<br/>';
-        }
+
         $this->getTemplate()->insertHtml('message', trim($msg, '<br/>'));
 
         return $this->show();

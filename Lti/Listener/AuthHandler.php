@@ -31,9 +31,8 @@ class AuthHandler implements SubscriberInterface
      */
     public function onLoginSuccess(AuthEvent $event)
     {
-        vd('LTI::onLoginSuccess');
-
         if ($event->get('isLti') === true) {
+
             $event->setRedirect(null);
             \App\Factory::getSession()->set('auth.password.access', false);
         }
@@ -46,13 +45,10 @@ class AuthHandler implements SubscriberInterface
      */
     public function onLogout(AuthEvent $event)
     {
-        vd('LTI::onLogout');
-
         $ltiSess = \Lti\Provider::getLtiSession();
         if (\Lti\Provider::isLti() && !empty($ltiSess['launch_presentation_return_url'])) {
             $event->setRedirect(\Tk\Uri::create($ltiSess['launch_presentation_return_url']));
         }
-
     }
 
 

@@ -1,6 +1,7 @@
 <?php
 namespace Lti\Controller;
 
+use App\Factory;
 use Tk\Request;
 use Tk\Form;
 use Tk\Form\Event;
@@ -44,16 +45,8 @@ class InstitutionSettings extends Iface
         /** @var \Lti\Plugin $plugin */
         $plugin = \Lti\Plugin::getInstance();
         $this->institution = $this->getUser()->getInstitution();
-        $this->data = \Tk\Db\Data::create($plugin->getName() . '.institution', $this->institution->getId());
+        $this->data = \Lti\Plugin::getInstitutionData();
 
-
-        $db = \App\Factory::getDb();
-        $sql = sprintf("SHOW TABLES LIKE '%slti2\_%' ", $db->escapeString(self::$LTI_DB_PREFIX));
-        $result = $db->query($sql);
-
-        foreach ($result as $row) {
-            vd($result);
-        }
     }
 
     /**
@@ -66,8 +59,14 @@ class InstitutionSettings extends Iface
     {
         $this->form = new Form('formEdit', $request);
 
-        $this->form->addField(new Field\Input('plugin.title'))->setLabel('Site Title')->setRequired(true);
-        $this->form->addField(new Field\Input('plugin.email'))->setLabel('Site Email')->setRequired(true);
+        $this->form->addField(new Field\Checkbox(\Lti\Plugin::LTI_ENABLE))->setLabel('Enable LTI')->setTabGroup('LTI')->setNotes('Enable the LTI launch URL for LMS systems.');
+        $lurl = \Tk\Uri::create('/lti/'.$this->institution->getHash().'/launch.html')->toString();
+        if ($this->institution->domain)
+            $lurl = \Tk\Uri::create('/lti/launch.html')->setHost($this->institution->domain)->toString();
+        $this->form->addField(new Field\Html(\Lti\Plugin::LTI_URL, $lurl))->setLabel('Launch Url')->setTabGroup('LTI');
+        $this->institution->getData()->set(\Lti\Plugin::LTI_URL, $lurl);
+        $this->form->addField(new Field\Input(\Lti\Plugin::LTI_KEY))->setLabel('LTI Key')->setTabGroup('LTI');
+        $this->form->addField(new Field\Input(\Lti\Plugin::LTI_SECRET))->setLabel('LTI Secret')->setTabGroup('LTI')->setAttr('placeholder', 'Auto Generate');
         
         $this->form->addField(new Event\Button('update', array($this, 'doSubmit')));
         $this->form->addField(new Event\Button('save', array($this, 'doSubmit')));
@@ -88,23 +87,63 @@ class InstitutionSettings extends Iface
     {
         $values = $form->getValues();
         $this->data->replace($values);
+
+        // validate LTI consumer key
+        $lid = (int)$this->data->get(\Lti\Plugin::LTI_CURRENT_ID);
         
-        if (empty($values['plugin.title']) || strlen($values['plugin.title']) < 3) {
-            $form->addFieldError('plugin.title', 'Please enter your name');
+        if ($form->getFieldValue(\Lti\Plugin::LTI_ENABLE)) {
+            if (!$form->getFieldValue(\Lti\Plugin::LTI_KEY)) {
+                $form->addFieldError(\Lti\Plugin::LTI_KEY, 'Please enter a LTI Key');
+            }
+            if (!$form->getFieldValue(\Lti\Plugin::LTI_SECRET) && $lid > 0) {
+                $form->addFieldError(\Lti\Plugin::LTI_SECRET, 'Please enter a LTI secret code');
+            }
+            if (\Lti\Plugin::ltiKeyExists($form->getFieldValue(\Lti\Plugin::LTI_KEY), $lid)) {
+                $form->addFieldError(\Lti\Plugin::LTI_KEY, 'This LTI key already exists for another Institution.');
+            }
         }
-        if (empty($values['plugin.email']) || !filter_var($values['plugin.email'], \FILTER_VALIDATE_EMAIL)) {
-            $form->addFieldError('plugin.email', 'Please enter a valid email address');
-        }
-        
+
         if ($this->form->hasErrors()) {
             return;
         }
-        
+
+        // unimelb_00002
+        // 1f72a0bac401a3e375e737185817463c
+
+        $consumer = \Lti\Plugin::getLtiConsumer();
+        if ($this->data->get(\Lti\Plugin::LTI_ENABLE)) {
+            if (!$consumer) {
+                $consumer = new \IMSGlobal\LTI\ToolProvider\ToolConsumer(null, \Lti\Plugin::getLtiDataConnector());
+            }
+            $consumer->setKey($this->data->get(\Lti\Plugin::LTI_KEY));
+            if ($this->data->get(\Lti\Plugin::LTI_SECRET)) {
+                $consumer->secret = $this->data->get(\Lti\Plugin::LTI_SECRET);
+            }
+            $consumer->enabled = true;
+            $consumer->name = $this->institution->name;
+            $consumer->save();
+
+            $this->data->set(\Lti\Plugin::LTI_CURRENT_KEY, $consumer->getKey());
+            $this->data->set(\Lti\Plugin::LTI_CURRENT_ID, $consumer->getRecordId());
+            $this->data->set(\Lti\Plugin::LTI_SECRET, $consumer->secret);
+            $url = \Tk\Uri::create('/lti/'.$this->institution->getHash().'/launch.html')->toString();
+            if ($this->institution->domain)
+                $url = \Tk\Uri::create('http://'.$this->institution->domain.'/lti/launch.html')->toString();
+            $this->data->set(\Lti\Plugin::LTI_URL, $url);
+
+        } else {
+            if ($consumer) {
+                $consumer->enabled = false;
+                $consumer->save();
+            }
+        }
+
         $this->data->save();
         
-        \Tk\Alert::addSuccess('Site settings saved.');
+        \Tk\Alert::addSuccess('LTI settings saved.');
         if ($form->getTriggeredEvent()->getName() == 'update') {
-            \Tk\Uri::create('/client/plugins.html')->redirect();
+            \App\Factory::getCrumbs()->getBackUrl()->redirect();
+            //\Tk\Uri::create('/client/plugins.html')->redirect();
         }
         \Tk\Uri::create()->redirect();
     }
@@ -121,6 +160,33 @@ class InstitutionSettings extends Iface
         // Render the form
         $fren = new \Tk\Form\Renderer\Dom($this->form);
         $template->insertTemplate($this->form->getId(), $fren->show()->getTemplate());
+
+        $formId = $this->form->getId();
+
+        $js = <<<JS
+jQuery(function($) {
+
+  function toggleFields(checkbox) {
+    var pre = checkbox.attr('name').substring(0, checkbox.attr('name').lastIndexOf('.'));
+    var list = $('input[name^="'+pre+'"]').not('.ignore');
+    if (!list.length) return;
+    var checked = list.slice(0 ,1).get(0).checked;
+    if (checked) {
+      list.slice(1).removeAttr('disabled', 'disabled').removeClass('disabled');
+    } else {
+      list.slice(1).attr('disabled', 'disabled').addClass('disabled');
+    }
+  }
+  $('#$formId').find('.tk-checkbox .checkbox input').change(function(e) {
+    toggleFields($(this));
+  }).each(function (i) {
+    toggleFields($(this));
+  });
+   
+});
+JS;
+        $template->appendJs($js);
+
 
         return $this->getPage()->setPageContent($template);
     }
@@ -160,6 +226,9 @@ class InstitutionSettings extends Iface
         <div class="row">
           <div class="col-lg-12">
             <div var="formEdit"></div>
+      
+            <hr/>
+            <p>Includes support for LTI 1.1 and the unofficial extensions to LTI 1.0, as well as the registration process and services of LTI 2.0.</p>
           </div>
         </div>
       </div>

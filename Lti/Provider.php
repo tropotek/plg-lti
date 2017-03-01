@@ -125,7 +125,7 @@ class Provider extends ToolProvider\ToolProvider
             if (!$user) {
                 // Create new user
                 $role = User::ROLE_STUDENT;
-                if ($this->user->isLearner() || $this->user->isStaff()) {
+                if ($this->user->isAdmin() || $this->user->isStaff()) {
                     $role = User::ROLE_STAFF;
                 }
 
@@ -151,11 +151,6 @@ class Provider extends ToolProvider\ToolProvider
             }
             $ltiSesh = array_merge($_GET, $_POST);
 
-            // Add user to auth
-            $auth = \App\Factory::getAuth();
-            \App\Listener\MasqueradeHandler::masqueradeClear();
-            $auth->clearIdentity()->getStorage()->write($user->id);
-
             // Add user to course if found.
             if (empty($ltiSesh['context_label'])) throw new \Tk\Exception('Course not available, Please contact LMS administrator.');
 
@@ -178,17 +173,24 @@ class Provider extends ToolProvider\ToolProvider
             CourseMap::create()->addUser($course->id, $user->id);
             \Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiSesh);
 
+
+            // Add user to auth
+            $auth = \App\Factory::getAuth();
+            \App\Listener\MasqueradeHandler::masqueradeClear();
+            $authResult = new \Tk\Auth\Result(\Tk\Auth\Result::SUCCESS, $user->id);
+            $auth->clearIdentity()->getStorage()->write($user->id);
+            \Tk\Config::getInstance()->setUser($user);
+
+
             // fire loginSuccess....
             if ($this->dispatcher) {    // This event should redirect the user to their homepage.
                 $event = new \Tk\Event\AuthEvent($auth, $ltiSesh);
+                $event->setResult($authResult);
                 $event->set('user', $user);
                 $event->set('isLti', true);
                 $this->dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $event);
-
-                if ($event->getRedirect())
-                    $event->getRedirect()->redirect();
             }
-
+            // Redirect to the course page
             \App\Uri::createHomeUrl($course->code . '/index.html')->redirect();
 
         } catch (\Exception $e) {
@@ -232,7 +234,7 @@ class Provider extends ToolProvider\ToolProvider
     function onError()
     {
         vd('LTI: onError', $this->reason, $this->message);
-        //return true;        // Stops redirect back to app, incase you want to show an error messages locally
+        //return true;        // Stops redirect back to app, in-case you want to show an error messages locally
     }
 
 }
