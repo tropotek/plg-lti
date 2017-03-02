@@ -26,6 +26,11 @@ class Provider extends ToolProvider\ToolProvider
     const LTI_COURSE_ID = 'lti_courseId';
 
     /**
+     * @var \App\Db\Course
+     */
+    protected static $course = null;
+
+    /**
      * @var Institution
      */
     protected $institution = null;
@@ -34,11 +39,6 @@ class Provider extends ToolProvider\ToolProvider
      * @var EventDispatcher
      */
     protected $dispatcher = null;
-
-    /**
-     * @var \App\Db\Course
-     */
-    protected static $course = null;
 
 
     /**
@@ -100,6 +100,80 @@ class Provider extends ToolProvider\ToolProvider
     }
 
     /**
+     * @return bool
+     */
+    public function isCoordinator()
+    {
+        return ($this->hasRole('Instructor'));
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLecturer()
+    {
+        return ($this->hasRole('ContentDeveloper') || $this->hasRole('TeachingAssistant'));
+    }
+
+    /**
+     * Check whether the user has a specified role name.
+     *
+     * @param string $role Name of role
+     *
+     * @return boolean True if the user has the specified role
+     */
+    private function hasRole($role) {
+
+        if (substr($role, 0, 4) !== 'urn:') {
+            $role = 'urn:lti:role:ims/lis/' . $role;
+        }
+        return in_array($role, $this->user->roles);
+    }
+
+    /*
+Array[34]
+(
+  [tool_consumer_info_product_family_code] => Blackboard Learn
+  [resource_link_title] => EMS III [Current Course]
+  [context_title] => VOCE Vet Science LTI test
+  [roles] => urn:lti:role:ims/lis/Instructor            // TODO: Find out what a Lecture permission looks like.
+  [lis_person_name_family] => Mifsud
+  [tool_consumer_instance_name] => The University of Melbourne
+  [tool_consumer_instance_guid] => 1005cc36f90e4ed58af938c5cea2910a
+  [resource_link_id] => _189167_1
+  [oauth_signature_method] => HMAC-SHA1
+  [oauth_version] => 1.0
+  [custom_caliper_profile_url] => https://CASSANDRA.lms.unimelb.edu.au/learn/api/v1/telemetry/caliper/profile/_189167_1
+  [launch_presentation_return_url] => https://sandpit.lms.unimelb.edu.au/webapps/blackboard/execute/blti/launchReturn?course_id=_2051_1&content_id=_189167_1&toGC=false&launch_time=1488412989529&launch_id=43cac7ac-1ee0-45ac-853d-aaa638da9d30&link_id=_189167_1
+  [ext_launch_id] => 43cac7ac-1ee0-45ac-853d-aaa638da9d30
+  [ext_lms] => bb-3000.1.3-rel.70+214db31
+  [lti_version] => LTI-1p0
+  [lis_person_contact_email_primary] => michael.mifsud@unimelb.edu.au
+  [oauth_signature] => O+HwrQrxPuxChH5pmfTcpHcKm0k=
+  [oauth_consumer_key] => unimelb_00002
+  [launch_presentation_locale] => en-AU
+  [custom_caliper_federated_session_id] => https://caliper-mapping.cloudbb.blackboard.com/v1/sites/41943a4f-ec98-419c-8aa2-c7147a833858/sessions/0FFA07ED68CCF3F4729F63FF4317B7E4
+  [oauth_timestamp] => 1488412989
+  [lis_person_name_full] => Michael Mifsud
+  [tool_consumer_instance_contact_email] => dba-support@unimelb.edu.au
+  [lis_person_name_given] => Michael
+  [custom_tc_profile_url] =>
+  [oauth_nonce] => 33170809663331833
+  [lti_message_type] => basic-lti-launch-request
+  [user_id] => e178575f054e46bfbfaadfb1438d099b
+  [oauth_callback] => about:blank
+  [tool_consumer_info_version] => 3000.1.3-rel.70+214db31
+  [context_id] => 7cd5258c04e749a5b67d184f6f200328
+  [context_label] => VOCE10001_2014_SM5
+  [launch_presentation_document_target] => window
+  [ext_launch_presentation_css_url] => https://sandpit.lms.unimelb.edu.au/common/shared.css,https://sandpit.lms.unimelb.edu.au/branding/themes/unimelb-201410-08/theme.css,https://sandpit.lms.unimelb.edu.au/branding/colorpalettes/unimelb-201404.08/generated/colorpalette.generated.modern.css
+
+)
+    */
+
+
+
+    /**
      * Insert code here to handle incoming connections - use the user,
      * context and resourceLink properties of the class instance
      * to access the current user, context and resource link.
@@ -125,6 +199,12 @@ class Provider extends ToolProvider\ToolProvider
             if (!$user) {
                 // Create new user
                 $role = User::ROLE_STUDENT;
+                // TODO: find out the right field for these
+//                if ($this->isCoordinator()) {
+//                    $role = User::ROLE_COORDINATOR;
+//                } else if ($this->isLecturer()) {
+//                    $role = User::ROLE_LECTURER;
+//                } else
                 if ($this->user->isAdmin() || $this->user->isStaff()) {
                     $role = User::ROLE_STAFF;
                 }
@@ -150,12 +230,22 @@ class Provider extends ToolProvider\ToolProvider
                 throw new \Tk\Exception('User has no permission to access this resource. Contact your administrator.');
             }
             $ltiSesh = array_merge($_GET, $_POST);
+            vd($ltiSesh);
 
             // Add user to course if found.
             if (empty($ltiSesh['context_label'])) throw new \Tk\Exception('Course not available, Please contact LMS administrator.');
 
             $courseCode = preg_replace('/[^a-z0-9_-]/i', '_', $ltiSesh['context_label']);
-            $course = CourseMap::create()->findByCode($courseCode, $this->institution->id);
+            $course = null;
+            if (!empty($ltiSesh['lti_courseId'])) {     // Force course selection via passed param in the LTI launch url:  {launchUrl}?lti_courseId=3
+                /** @var \App\Db\Course $course */
+                $course = CourseMap::create()->find($ltiSesh['lti_courseId']);
+                if (!$course || ($course->institutionId != $this->institution->id)) {
+                    $course = null;
+                }
+            } else {
+                $course = CourseMap::create()->findByCode($courseCode, $this->institution->id);
+            }
 
             if (!$course) {
                 if (!$this->user->isStaff()) throw new \Tk\Exception('Course not available, Please contact course coordinator.');
@@ -180,7 +270,6 @@ class Provider extends ToolProvider\ToolProvider
             $authResult = new \Tk\Auth\Result(\Tk\Auth\Result::SUCCESS, $user->id);
             $auth->clearIdentity()->getStorage()->write($user->id);
             \Tk\Config::getInstance()->setUser($user);
-
 
             // fire loginSuccess....
             if ($this->dispatcher) {    // This event should redirect the user to their homepage.
