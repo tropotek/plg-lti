@@ -144,13 +144,18 @@ class Plugin extends \App\Plugin\Iface
     function doInit()
     {
         include dirname(__FILE__) . '/config.php';
+        $config = $this->getConfig();
 
-        $this->getPluginFactory()->registerInstitutionPlugin($this);
+        $this->getPluginFactory()->registerZonePlugin($this, \App\Plugin\Iface::ZONE_CLIENT);
 
         /** @var EventDispatcher $dispatcher */
         $dispatcher = \Tk\Config::getInstance()->getEventDispatcher();
-        $dispatcher->addSubscriber(new \Lti\Listener\AuthHandler());
-        $dispatcher->addSubscriber(new \Lti\Listener\MenuHandler());
+        /** @var \App\Db\Institution $institution */
+        $institution = $config->getInstitution();
+        if($institution && $this->isZonePluginEnabled(\App\Plugin\Iface::ZONE_CLIENT, $institution->getId())) {
+            $dispatcher->addSubscriber(new \Lti\Listener\AuthHandler());
+            $dispatcher->addSubscriber(new \Lti\Listener\MenuHandler());
+        }
 
     }
 
@@ -208,21 +213,17 @@ class Plugin extends \App\Plugin\Iface
     }
 
     /**
-     * @return \Tk\Uri
-     */
-//    public function getSettingsUrl()
-//    {
-//        return \Tk\Uri::create('/lti/adminSettings.html');
-//    }
-
-    /**
      * Get the course settings URL, if null then there is none
      *
      * @return string|\Tk\Uri|null
      */
-    public function getInstitutionSettingsUrl()
+    public function getZoneSettingsUrl($zoneName)
     {
-        return \Tk\Uri::create('/lti/institutionSettings.html');
+        switch ($zoneName) {
+            case \App\Plugin\Iface::ZONE_CLIENT:
+                return \Tk\Uri::create('/lti/institutionSettings.html');
+        }
+        return null;
     }
 
 }
