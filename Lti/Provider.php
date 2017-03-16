@@ -4,6 +4,7 @@ namespace Lti;
 use App\Db\CourseMap;
 use App\Db\Institution;
 use App\Db\User;
+use App\Db\UserRole;
 use App\Db\UserMap;
 use IMSGlobal\LTI\ToolProvider;
 use IMSGlobal\LTI\ToolProvider\DataConnector\DataConnector;
@@ -198,7 +199,7 @@ Array[34]
 
             if (!$user) {
                 // Create new user
-                $role = User::ROLE_STUDENT;
+                $defaultRole = UserRole::DEFAULT_STUDENT;
                 // TODO: find out the right field for these
 //                if ($this->isCoordinator()) {
 //                    $role = User::ROLE_COORDINATOR;
@@ -206,7 +207,7 @@ Array[34]
 //                    $role = User::ROLE_LECTURER;
 //                } else
                 if ($this->user->isAdmin() || $this->user->isStaff()) {
-                    $role = User::ROLE_STAFF;
+                    $defaultRole = UserRole::DEFAULT_STAFF;
                 }
 
                 list($username, $domain) = explode('@', $this->user->email);
@@ -223,14 +224,14 @@ Array[34]
                     $i++;
                 } while ($found);
 
-                $user = \App\Factory::createNewUser($this->institution->id, $username, $this->user->email, $role, '', $this->user->fullname);
+                $user = \App\Factory::createNewUser($this->institution->id, $username, $this->user->email, $defaultRole, '', $this->user->fullname);
             }
 
             if (!$user->active) {
                 throw new \Tk\Exception('User has no permission to access this resource. Contact your administrator.');
             }
             $ltiSesh = array_merge($_GET, $_POST);
-            vd($ltiSesh);
+            //vd($ltiSesh);
 
             // Add user to course if found.
             if (empty($ltiSesh['context_label'])) throw new \Tk\Exception('Course not available, Please contact LMS administrator.');

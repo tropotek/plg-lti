@@ -174,8 +174,6 @@ class Plugin extends \App\Plugin\Iface
 //        $data->set('plugin.email', 'null@unimelb.edu.au');
 //        $data->save();
 
-        vd('Activate');
-
         $config = \Tk\Config::getInstance();
         $db = \App\Factory::getDb();
 
