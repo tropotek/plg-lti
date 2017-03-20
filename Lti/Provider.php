@@ -3,7 +3,6 @@ namespace Lti;
 
 use App\Db\CourseMap;
 use App\Db\Institution;
-use App\Db\User;
 use App\Db\UserRole;
 use App\Db\UserMap;
 use IMSGlobal\LTI\ToolProvider;
@@ -199,15 +198,9 @@ Array[34]
 
             if (!$user) {
                 // Create new user
-                $defaultRole = UserRole::DEFAULT_STUDENT;
-                // TODO: find out the right field for these
-//                if ($this->isCoordinator()) {
-//                    $role = User::ROLE_COORDINATOR;
-//                } else if ($this->isLecturer()) {
-//                    $role = User::ROLE_LECTURER;
-//                } else
+                $section = UserRole::SECTION_STUDENT;
                 if ($this->user->isAdmin() || $this->user->isStaff()) {
-                    $defaultRole = UserRole::DEFAULT_STAFF;
+                    $section = UserRole::SECTION_STAFF;
                 }
 
                 list($username, $domain) = explode('@', $this->user->email);
@@ -224,7 +217,7 @@ Array[34]
                     $i++;
                 } while ($found);
 
-                $user = \App\Factory::createNewUser($this->institution->id, $username, $this->user->email, $defaultRole, '', $this->user->fullname);
+                $user = \App\Factory::createNewUser($this->institution->id, $username, $this->user->email, $section, '', $this->user->fullname);
             }
 
             if (!$user->active) {
