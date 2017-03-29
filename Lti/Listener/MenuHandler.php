@@ -1,7 +1,7 @@
 <?php
 namespace Lti\Listener;
 
-use Tk\EventDispatcher\SubscriberInterface;
+use Tk\EventDispatcher\Subscriber;
 
 /**
  * Class StartupHandler
@@ -10,7 +10,7 @@ use Tk\EventDispatcher\SubscriberInterface;
  * @link http://www.tropotek.com/
  * @license Copyright 2015 Michael Mifsud
  */
-class MenuHandler implements SubscriberInterface
+class MenuHandler implements Subscriber
 {
 
     public function onInit(\Tk\EventDispatcher\Event $event)

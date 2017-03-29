@@ -7,7 +7,7 @@ use App\Db\UserRole;
 use App\Db\UserMap;
 use IMSGlobal\LTI\ToolProvider;
 use IMSGlobal\LTI\ToolProvider\DataConnector\DataConnector;
-use Tk\EventDispatcher\EventDispatcher;
+use Tk\EventDispatcher\Dispatcher;
 
 /**
  * Class Provider
@@ -36,7 +36,7 @@ class Provider extends ToolProvider\ToolProvider
     protected $institution = null;
 
     /**
-     * @var EventDispatcher
+     * @var Dispatcher
      */
     protected $dispatcher = null;
 
@@ -46,7 +46,7 @@ class Provider extends ToolProvider\ToolProvider
      *
      * @param DataConnector $dataConnector
      * @param Institution $institution
-     * @param EventDispatcher $dispatcher
+     * @param Dispatcher $dispatcher
      */
     public function __construct(DataConnector $dataConnector, $institution = null, $dispatcher = null)
     {
