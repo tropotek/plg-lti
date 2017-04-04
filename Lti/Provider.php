@@ -254,7 +254,7 @@ Array[34]
                 $course->active = true;
                 $course->save();
             }
-            CourseMap::create()->addUser($course->id, $user->id);
+            CourseMap::create()->addStudent($course->id, $user->id);
             \Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiSesh);
 
 
