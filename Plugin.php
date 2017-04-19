@@ -194,7 +194,8 @@ class Plugin extends \App\Plugin\Iface
         $db = \App\Factory::getDb();
 
         // Clear the data table of all plugin data
-        $sql = sprintf('DELETE FROM %s WHERE %s LIKE %s', $db->quoteParameter(\Tk\Db\Data::$DB_TABLE), $db->quoteParameter('foreign_key'), $db->quote($this->getName().'%'));
+        $sql = sprintf('DELETE FROM %s WHERE %s LIKE %s', $db->quoteParameter(\Tk\Db\Data::$DB_TABLE), $db->quoteParameter('fkey'),
+            $db->quote($this->getName().'%'));
         $db->query($sql);
 
         // Delete all LTI tables.
@@ -205,7 +206,8 @@ class Plugin extends \App\Plugin\Iface
         }
 
         // Remove migration track
-        $sql = sprintf('DELETE FROM %s WHERE %s LIKE %s', $db->quoteParameter(\Tk\Util\SqlMigrate::$DB_TABLE), $db->quoteParameter('path'), $db->quote('/plugin/' . $this->getName().'/%'));
+        $sql = sprintf('DELETE FROM %s WHERE %s LIKE %s', $db->quoteParameter(\Tk\Util\SqlMigrate::$DB_TABLE), $db->quoteParameter('path'),
+            $db->quote('/plugin/' . $this->getName().'/%'));
         $db->query($sql);
 
     }
