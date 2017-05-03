@@ -1,7 +1,7 @@
 <?php
 namespace Lti\Controller;
 
-use App\Factory;
+
 use Tk\Request;
 use Tk\Form;
 use Tk\Form\Event;
@@ -57,7 +57,8 @@ class InstitutionSettings extends Iface
      */
     public function doDefault(Request $request)
     {
-        $this->form = new Form('formEdit', $request);
+        $this->form = \App\Factory::createForm('formEdit');
+        $this->form->setParam('renderer', \App\Factory::createFormRenderer($this->form));
 
         $this->form->addField(new Field\Checkbox(\Lti\Plugin::LTI_ENABLE))->setLabel('Enable LTI')->setTabGroup('LTI')->setNotes('Enable the LTI launch URL for LMS systems.');
         $lurl = \Tk\Uri::create('/lti/'.$this->institution->getHash().'/launch.html')->toString();
@@ -143,7 +144,6 @@ class InstitutionSettings extends Iface
         \Tk\Alert::addSuccess('LTI settings saved.');
         if ($form->getTriggeredEvent()->getName() == 'update') {
             \App\Factory::getCrumbs()->getBackUrl()->redirect();
-            //\Tk\Uri::create('/client/plugins.html')->redirect();
         }
         \Tk\Uri::create()->redirect();
     }
@@ -158,8 +158,7 @@ class InstitutionSettings extends Iface
         $template = $this->getTemplate();
         
         // Render the form
-        $fren = new \Tk\Form\Renderer\Dom($this->form);
-        $template->insertTemplate($this->form->getId(), $fren->show()->getTemplate());
+        $template->insertTemplate($this->form->getId(), $this->form->getParam('renderer')->show()->getTemplate());
 
         $formId = $this->form->getId();
 
@@ -167,17 +166,19 @@ class InstitutionSettings extends Iface
 jQuery(function($) {
 
   function toggleFields(checkbox) {
-    var pre = checkbox.attr('name').substring(0, checkbox.attr('name').lastIndexOf('.'));
-    var list = $('input[name^="'+pre+'"]').not('.ignore');
+    var name = checkbox.get(0).name;
+    var parent = checkbox.closest('.tab-pane, .tk-form-fields');
+    var list = parent.find('input, textarea, select').not('input[name="'+name+'"]');
+    
     if (!list.length) return;
-    var checked = list.slice(0 ,1).get(0).checked;
-    if (checked) {
-      list.slice(1).removeAttr('disabled', 'disabled').removeClass('disabled');
+    if (checkbox.prop('checked')) {
+      list.removeAttr('disabled', 'disabled').removeClass('disabled');
     } else {
-      list.slice(1).attr('disabled', 'disabled').addClass('disabled');
+      list.attr('disabled', 'disabled').addClass('disabled');
     }
   }
-  $('#$formId').find('.tk-checkbox .checkbox input').change(function(e) {
+  
+  $('#$formId').find('input[name$=".enable"]').not('input[type="hidden"]').change(function(e) {
     toggleFields($(this));
   }).each(function (i) {
     toggleFields($(this));
