@@ -238,7 +238,7 @@ Array[34]
                     $course = null;
                 }
             } else {
-                $course = CourseMap::create()->findByCode($courseCode, $this->institution->id);
+                $course = CourseMap::create()->findByCode(array('code' => $courseCode, 'institutionId' => $this->institution->id));
             }
 
             if (!$course) {
