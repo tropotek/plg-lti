@@ -198,9 +198,9 @@ Array[34]
 
             if (!$user) {
                 // Create new user
-                $section = UserGroup::ROLE_STUDENT;
+                $role = UserGroup::ROLE_STUDENT;
                 if ($this->user->isAdmin() || $this->user->isStaff()) {
-                    $section = UserGroup::ROLE_STAFF;
+                    $role = UserGroup::ROLE_STAFF;
                 }
 
                 list($username, $domain) = explode('@', $this->user->email);
@@ -217,7 +217,7 @@ Array[34]
                     $i++;
                 } while ($found);
 
-                $user = \App\Factory::createNewUser($this->institution->id, $username, $this->user->email, $section, '', $this->user->fullname);
+                $user = \App\Factory::createNewUser($this->institution->id, $username, $this->user->email, $role, '', $this->user->fullname);
             }
 
             if (!$user->active) {
