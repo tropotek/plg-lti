@@ -3,7 +3,7 @@ namespace Lti;
 
 use App\Db\CourseMap;
 use App\Db\Institution;
-use App\Db\UserRole;
+use App\Db\UserGroup;
 use App\Db\UserMap;
 use IMSGlobal\LTI\ToolProvider;
 use IMSGlobal\LTI\ToolProvider\DataConnector\DataConnector;
@@ -198,9 +198,9 @@ Array[34]
 
             if (!$user) {
                 // Create new user
-                $section = UserRole::SECTION_STUDENT;
+                $section = UserGroup::ROLE_STUDENT;
                 if ($this->user->isAdmin() || $this->user->isStaff()) {
-                    $section = UserRole::SECTION_STAFF;
+                    $section = UserGroup::ROLE_STAFF;
                 }
 
                 list($username, $domain) = explode('@', $this->user->email);

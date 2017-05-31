@@ -60,7 +60,7 @@ class InstitutionSettings extends Iface
         $this->form = \App\Factory::createForm('formEdit');
         $this->form->setParam('renderer', \App\Factory::createFormRenderer($this->form));
 
-        $this->form->addField(new Field\Checkbox(\Lti\Plugin::LTI_ENABLE))->setLabel('Enable LTI')->setTabGroup('LTI')->setNotes('Enable the LTI launch URL for LMS systems.');
+        $this->form->addField(new Field\Checkbox(\Lti\Plugin::LTI_ENABLE))->addCss('tk-input-toggle')->setLabel('Enable LTI')->setTabGroup('LTI')->setNotes('Enable the LTI launch URL for LMS systems.');
         $lurl = \Tk\Uri::create('/lti/'.$this->institution->getHash().'/launch.html')->toString();
         if ($this->institution->domain)
             $lurl = \Tk\Uri::create('/lti/launch.html')->setHost($this->institution->domain)->toString();
@@ -160,33 +160,32 @@ class InstitutionSettings extends Iface
         // Render the form
         $template->insertTemplate($this->form->getId(), $this->form->getParam('renderer')->show()->getTemplate());
 
-        $formId = $this->form->getId();
-
-        $js = <<<JS
-jQuery(function($) {
-
-  function toggleFields(checkbox) {
-    var name = checkbox.get(0).name;
-    var parent = checkbox.closest('.tab-pane, .tk-form-fields');
-    var list = parent.find('input, textarea, select').not('input[name="'+name+'"]');
-    
-    if (!list.length) return;
-    if (checkbox.prop('checked')) {
-      list.removeAttr('disabled', 'disabled').removeClass('disabled');
-    } else {
-      list.attr('disabled', 'disabled').addClass('disabled');
-    }
-  }
-  
-  $('#$formId').find('input[name$=".enable"]').not('input[type="hidden"]').change(function(e) {
-    toggleFields($(this));
-  }).each(function (i) {
-    toggleFields($(this));
-  });
-   
-});
-JS;
-        $template->appendJs($js);
+//        $formId = $this->form->getId();
+//        $js = <<<JS
+//jQuery(function($) {
+//
+//  function toggleFields(checkbox) {
+//    var name = checkbox.get(0).name;
+//    var parent = checkbox.closest('.tab-pane, .tk-form-fields');
+//    var list = parent.find('input, textarea, select').not('input[name="'+name+'"]');
+//
+//    if (!list.length) return;
+//    if (checkbox.prop('checked')) {
+//      list.removeAttr('disabled', 'disabled').removeClass('disabled');
+//    } else {
+//      list.attr('disabled', 'disabled').addClass('disabled');
+//    }
+//  }
+//
+//  $('#$formId').find('input[name$=".enable"]').not('input[type="hidden"]').change(function(e) {
+//    toggleFields($(this));
+//  }).each(function (i) {
+//    toggleFields($(this));
+//  });
+//
+//});
+//JS;
+//        $template->appendJs($js);
 
 
         return $this->getPage()->setPageContent($template);

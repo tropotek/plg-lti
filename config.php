@@ -19,11 +19,11 @@ $routes->add('lti-launch', new \Tk\Routing\Route('/lti/launch.html', 'Lti\Contro
 $routes->add('institution-lti-launch', new \Tk\Routing\Route('/lti/{instHash}/launch.html', 'Lti\Controller\Launch::doInsLaunch', $params));
 
 
-$params = array('section' => \App\Db\UserRole::SECTION_ADMIN);
+$params = array('section' => \App\Db\UserGroup::ROLE_ADMIN);
 $routes->add('LTI Admin Settings', new \Tk\Routing\Route('/lti/adminSettings.html', 'Lti\Controller\SystemSettings::doDefault', $params));
 
 
-$params = array('section' => \App\Db\UserRole::SECTION_CLIENT);
+$params = array('section' => \App\Db\UserGroup::ROLE_CLIENT);
 $routes->add('LTI Institution Settings', new \Tk\Routing\Route('/lti/institutionSettings.html', 'Lti\Controller\InstitutionSettings::doDefault', $params));
 
 
