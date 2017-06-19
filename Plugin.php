@@ -1,7 +1,7 @@
 <?php
 namespace Lti;
 
-use Tk\EventDispatcher\Dispatcher;
+use Tk\Event\Dispatcher;
 
 
 /**
@@ -11,8 +11,13 @@ use Tk\EventDispatcher\Dispatcher;
  * @link http://www.tropotek.com/
  * @license Copyright 2016 Michael Mifsud
  */
-class Plugin extends \App\Plugin\Iface
+class Plugin extends \Tk\Plugin\Iface
 {
+
+    const ZONE_INSTITUTION = 'institution';
+    const ZONE_COURSE_PROFILE = 'profile';
+    const ZONE_COURSE = 'course';
+
     // Data labels
     const LTI_STUFF = 'inst.lti.setting';
     const LTI_ENABLE = 'inst.lti.enable';
@@ -47,7 +52,7 @@ class Plugin extends \App\Plugin\Iface
     /**
      * A helper method to get the Plugin instance globally
      *
-     * @return \App\Plugin\Iface
+     * @return \Tk\Plugin\Iface
      */
     static function getInstance()
     {
@@ -132,8 +137,8 @@ class Plugin extends \App\Plugin\Iface
 
 
     // ---- \Tk\Plugin\Iface Interface Methods ----
-    
-    
+
+
     /**
      * Init the plugin
      *
@@ -146,13 +151,13 @@ class Plugin extends \App\Plugin\Iface
         include dirname(__FILE__) . '/config.php';
         $config = $this->getConfig();
 
-        $this->getPluginFactory()->registerZonePlugin($this, \App\Plugin\Iface::ZONE_CLIENT);
+        $this->getPluginFactory()->registerZonePlugin($this, self::ZONE_INSTITUTION);
 
         /** @var Dispatcher $dispatcher */
         $dispatcher = \Tk\Config::getInstance()->getEventDispatcher();
         /** @var \App\Db\Institution $institution */
         $institution = $config->getInstitution();
-        if($institution && $this->isZonePluginEnabled(\App\Plugin\Iface::ZONE_CLIENT, $institution->getId())) {
+        if($institution && $this->isZonePluginEnabled(self::ZONE_INSTITUTION, $institution->getId())) {
             $dispatcher->addSubscriber(new \Lti\Listener\AuthHandler());
             $dispatcher->addSubscriber(new \Lti\Listener\MenuHandler());
         }
@@ -220,7 +225,7 @@ class Plugin extends \App\Plugin\Iface
     public function getZoneSettingsUrl($zoneName)
     {
         switch ($zoneName) {
-            case \App\Plugin\Iface::ZONE_CLIENT:
+            case self::ZONE_INSTITUTION:
                 return \Tk\Uri::create('/lti/institutionSettings.html');
         }
         return null;

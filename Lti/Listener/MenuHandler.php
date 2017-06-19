@@ -1,7 +1,7 @@
 <?php
 namespace Lti\Listener;
 
-use Tk\EventDispatcher\Subscriber;
+use Tk\Event\Subscriber;
 
 /**
  * Class StartupHandler
@@ -13,7 +13,7 @@ use Tk\EventDispatcher\Subscriber;
 class MenuHandler implements Subscriber
 {
 
-    public function onInit(\Tk\EventDispatcher\Event $event)
+    public function onInit(\Tk\Event\Event $event)
     {
         if (!\Lti\Provider::isLti()) return;
 

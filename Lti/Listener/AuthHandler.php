@@ -1,7 +1,7 @@
 <?php
 namespace Lti\Listener;
 
-use Tk\EventDispatcher\Subscriber;
+use Tk\Event\Subscriber;
 use Tk\Event\AuthEvent;
 use Tk\Auth\AuthEvents;
 
