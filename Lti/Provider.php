@@ -12,10 +12,6 @@ use Tk\Event\Dispatcher;
  * @author Michael Mifsud <info@tropotek.com>
  * @link http://www.tropotek.com/
  * @license Copyright 2016 Michael Mifsud
- *
- * @todo Should we optimize the entire app level LTI objects to be more abstract ?????
- * @todo I have implemented this as a working example primarily
- *
  */
 class Provider extends ToolProvider\ToolProvider
 {
@@ -233,11 +229,7 @@ class Provider extends ToolProvider\ToolProvider
                 $event->set('isLti', true);
                 $this->dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $event);
             }
-            vd('WHAT THE!!!!!!!!!!!');
-            // Redirect to the course page
-            //$user->getHomeUrl()->redirect();
-            //\Tk\Uri::create('/index.html')->redirect();
-
+            \Tk\Config::getInstance()->getLog()->warning('Remember to redirect in the login success event.');
         } catch (\Exception $e) {
             vd($e->__toString());
             $this->reason = $e->__toString();
