@@ -1,13 +1,10 @@
 <?php
 namespace Lti;
 
-use App\Db\CourseMap;
 use App\Db\Institution;
-use App\Db\UserGroup;
-use App\Db\UserMap;
 use IMSGlobal\LTI\ToolProvider;
 use IMSGlobal\LTI\ToolProvider\DataConnector\DataConnector;
-use Tk\EventDispatcher\Dispatcher;
+use Tk\Event\Dispatcher;
 
 /**
  * Class Provider
@@ -84,7 +81,7 @@ class Provider extends ToolProvider\ToolProvider
     {
         if (!self::$course) {
             $ltiSes = self::getLtiSession();
-            self::$course = CourseMap::create()->find($ltiSes[self::LTI_COURSE_ID]);
+            self::$course = Plugin::getPluginApi()->findCourse($ltiSes[self::LTI_COURSE_ID]);
         }
         return self::$course;
     }
@@ -130,49 +127,6 @@ class Provider extends ToolProvider\ToolProvider
         return in_array($role, $this->user->roles);
     }
 
-    /*
-Array[34]
-(
-  [tool_consumer_info_product_family_code] => Blackboard Learn
-  [resource_link_title] => EMS III [Current Course]
-  [context_title] => VOCE Vet Science LTI test
-  [roles] => urn:lti:role:ims/lis/Instructor            // TODO: Find out what a Lecture permission looks like.
-  [lis_person_name_family] => Mifsud
-  [tool_consumer_instance_name] => The University of Melbourne
-  [tool_consumer_instance_guid] => 1005cc36f90e4ed58af938c5cea2910a
-  [resource_link_id] => _189167_1
-  [oauth_signature_method] => HMAC-SHA1
-  [oauth_version] => 1.0
-  [custom_caliper_profile_url] => https://CASSANDRA.lms.unimelb.edu.au/learn/api/v1/telemetry/caliper/profile/_189167_1
-  [launch_presentation_return_url] => https://sandpit.lms.unimelb.edu.au/webapps/blackboard/execute/blti/launchReturn?course_id=_2051_1&content_id=_189167_1&toGC=false&launch_time=1488412989529&launch_id=43cac7ac-1ee0-45ac-853d-aaa638da9d30&link_id=_189167_1
-  [ext_launch_id] => 43cac7ac-1ee0-45ac-853d-aaa638da9d30
-  [ext_lms] => bb-3000.1.3-rel.70+214db31
-  [lti_version] => LTI-1p0
-  [lis_person_contact_email_primary] => michael.mifsud@unimelb.edu.au
-  [oauth_signature] => O+HwrQrxPuxChH5pmfTcpHcKm0k=
-  [oauth_consumer_key] => unimelb_00002
-  [launch_presentation_locale] => en-AU
-  [custom_caliper_federated_session_id] => https://caliper-mapping.cloudbb.blackboard.com/v1/sites/41943a4f-ec98-419c-8aa2-c7147a833858/sessions/0FFA07ED68CCF3F4729F63FF4317B7E4
-  [oauth_timestamp] => 1488412989
-  [lis_person_name_full] => Michael Mifsud
-  [tool_consumer_instance_contact_email] => dba-support@unimelb.edu.au
-  [lis_person_name_given] => Michael
-  [custom_tc_profile_url] =>
-  [oauth_nonce] => 33170809663331833
-  [lti_message_type] => basic-lti-launch-request
-  [user_id] => e178575f054e46bfbfaadfb1438d099b
-  [oauth_callback] => about:blank
-  [tool_consumer_info_version] => 3000.1.3-rel.70+214db31
-  [context_id] => 7cd5258c04e749a5b67d184f6f200328
-  [context_label] => VOCE10001_2014_SM5
-  [launch_presentation_document_target] => window
-  [ext_launch_presentation_css_url] => https://sandpit.lms.unimelb.edu.au/common/shared.css,https://sandpit.lms.unimelb.edu.au/branding/themes/unimelb-201410-08/theme.css,https://sandpit.lms.unimelb.edu.au/branding/colorpalettes/unimelb-201404.08/generated/colorpalette.generated.modern.css
-
-)
-    */
-
-
-
     /**
      * Insert code here to handle incoming connections - use the user,
      * context and resourceLink properties of the class instance
@@ -194,22 +148,20 @@ Array[34]
                 throw new \Tk\Exception('User email not found! Cannot log in.');
             }
             // Try to locate an existing user...
-            $user = UserMap::create()->findByEmail($this->user->email, $this->institution->id);
-
+            $user = Plugin::getPluginApi()->findUser($this->user->email, $this->institution->getId());
             if (!$user) {
                 // Create new user
-                $role = UserGroup::ROLE_STUDENT;
+                $role = 'student';
                 if ($this->user->isAdmin() || $this->user->isStaff()) {
-                    $role = UserGroup::ROLE_STAFF;
+                    $role = 'staff';
                 }
-
                 list($username, $domain) = explode('@', $this->user->email);
                 // There is a possibility that the usernames clash so auto create a unique one.
                 $un = $username;
                 $i = 0;
                 $found = null;
                 do {
-                    $found = UserMap::create()->findByUsername($un, $this->institution->id);
+                    $found = Plugin::getPluginApi()->findUser($un, $this->institution->getId());
                     if (!$found) {
                         $username = $un;
                     }
@@ -217,14 +169,24 @@ Array[34]
                     $i++;
                 } while ($found);
 
-                $user = \App\Factory::createNewUser($this->institution->id, $username, $this->user->email, $role, '', $this->user->fullname);
+                $params = array(
+                    'type' => 'lti',
+                    'institutionId' => $this->institution->getId(),
+                    'username' => $username,
+                    'email' => $this->user->email,
+                    'role' => $role,
+                    'password' => '',
+                    'name' => $this->user->fullname,
+                    'active' => true,
+                    'uid' => ''
+                );
+                $user = Plugin::getPluginApi()->createUser($params);
             }
 
             if (!$user->active) {
                 throw new \Tk\Exception('User has no permission to access this resource. Contact your administrator.');
             }
             $ltiSesh = array_merge($_GET, $_POST);
-            //vd($ltiSesh);
 
             // Add user to course if found.
             if (empty($ltiSesh['context_label'])) throw new \Tk\Exception('Course not available, Please contact LMS administrator.');
@@ -233,43 +195,41 @@ Array[34]
             $course = null;
             if (!empty($ltiSesh['lti_courseId'])) {     // Force course selection via passed param in the LTI launch url:  {launchUrl}?lti_courseId=3
                 /** @var \App\Db\Course $course */
-                $course = CourseMap::create()->find($ltiSesh['lti_courseId']);
-                if (!$course || ($course->institutionId != $this->institution->id)) {
+                $course = Plugin::getPluginApi()->findCourse($ltiSesh['lti_courseId']);
+                if (!$course || ($course->institutionId != $this->institution->getId())) {
                     $course = null;
                 }
             } else {
-                $course = CourseMap::create()->findByCode(array('code' => $courseCode, 'institutionId' => $this->institution->id));
+                $course = Plugin::getPluginApi()->findCourseByCode($courseCode, $this->institution->getId());
             }
 
             if (!$course) {
                 if (!$this->user->isStaff()) throw new \Tk\Exception('Course not available, Please contact course coordinator.');
-                $course = new \App\Db\Course();
-                $course->institutionId = $this->institution->id;
-                $course->name = $ltiSesh['context_title'];
-                $course->code = $courseCode;
-                $course->email = empty($ltiSesh['lis_person_contact_email_primary']) ? $ltiSesh['lis_person_contact_email_primary'] : \Tk\Config::getInstance()->get('site.email');
-                $course->description = '';
-                $course->start = \Tk\Date::create();
-                $course->finish = $course->start->add(new \DateInterval('P1Y'));
-                $course->active = true;
-                $course->save();
+                $params = array(
+                    'type' => 'lti',
+                    'institutionId' => $this->institution->getId(),
+                    'name' => $ltiSesh['context_title'],
+                    'code' => $courseCode,
+                    'email' => empty($ltiSesh['lis_person_contact_email_primary']) ? $ltiSesh['lis_person_contact_email_primary'] : \Tk\Config::getInstance()->get('site.email'),
+                    'description' => '',
+                    'dateStart' => \Tk\Date::create(),
+                    'dateEnd' => \Tk\Date::create()->add(new \DateInterval('P1Y')),
+                    'active' => true
+                );
+                $course = Plugin::getPluginApi()->createCourse($params);
             }
-            CourseMap::create()->addStudent($course->id, $user->id);
+            Plugin::getPluginApi()->addUserToCourse($user, $course);
+            //CourseMap::create()->addStudent($course->id, $user->id);
             \Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiSesh);
 
-
             // Add user to auth
-            $auth = \App\Factory::getAuth();
-            \App\Listener\MasqueradeHandler::masqueradeClear();
-            $authResult = new \Tk\Auth\Result(\Tk\Auth\Result::SUCCESS, $user->id);
-            $auth->clearIdentity()->getStorage()->write($user->id);
-            \Tk\Config::getInstance()->setUser($user);
-
+            $authResult = Plugin::getPluginApi()->autoAuthenticate($user);
             // fire loginSuccess....
             if ($this->dispatcher) {    // This event should redirect the user to their homepage.
-                $event = new \Tk\Event\AuthEvent($auth, $ltiSesh);
+                $event = new \Tk\Event\AuthEvent(\App\Factory::getAuth(), $ltiSesh);
                 $event->setResult($authResult);
                 $event->set('user', $user);
+                $event->set('course', $course);
                 $event->set('isLti', true);
                 $this->dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $event);
             }
@@ -320,4 +280,45 @@ Array[34]
         //return true;        // Stops redirect back to app, in-case you want to show an error messages locally
     }
 
+
+    /*
+Array[34]
+(
+  [tool_consumer_info_product_family_code] => Blackboard Learn
+  [resource_link_title] => EMS III [Current Course]
+  [context_title] => VOCE Vet Science LTI test
+  [roles] => urn:lti:role:ims/lis/Instructor            // TODO: Find out what a Lecture permission looks like.
+  [lis_person_name_family] => Mifsud
+  [tool_consumer_instance_name] => The University of Melbourne
+  [tool_consumer_instance_guid] => 1005cc36f90e4ed58af938c5cea2910a
+  [resource_link_id] => _189167_1
+  [oauth_signature_method] => HMAC-SHA1
+  [oauth_version] => 1.0
+  [custom_caliper_profile_url] => https://CASSANDRA.lms.unimelb.edu.au/learn/api/v1/telemetry/caliper/profile/_189167_1
+  [launch_presentation_return_url] => https://sandpit.lms.unimelb.edu.au/webapps/blackboard/execute/blti/launchReturn?course_id=_2051_1&content_id=_189167_1&toGC=false&launch_time=1488412989529&launch_id=43cac7ac-1ee0-45ac-853d-aaa638da9d30&link_id=_189167_1
+  [ext_launch_id] => 43cac7ac-1ee0-45ac-853d-aaa638da9d30
+  [ext_lms] => bb-3000.1.3-rel.70+214db31
+  [lti_version] => LTI-1p0
+  [lis_person_contact_email_primary] => michael.mifsud@unimelb.edu.au
+  [oauth_signature] => O+HwrQrxPuxChH5pmfTcpHcKm0k=
+  [oauth_consumer_key] => unimelb_00002
+  [launch_presentation_locale] => en-AU
+  [custom_caliper_federated_session_id] => https://caliper-mapping.cloudbb.blackboard.com/v1/sites/41943a4f-ec98-419c-8aa2-c7147a833858/sessions/0FFA07ED68CCF3F4729F63FF4317B7E4
+  [oauth_timestamp] => 1488412989
+  [lis_person_name_full] => Michael Mifsud
+  [tool_consumer_instance_contact_email] => dba-support@unimelb.edu.au
+  [lis_person_name_given] => Michael
+  [custom_tc_profile_url] =>
+  [oauth_nonce] => 33170809663331833
+  [lti_message_type] => basic-lti-launch-request
+  [user_id] => e178575f054e46bfbfaadfb1438d099b
+  [oauth_callback] => about:blank
+  [tool_consumer_info_version] => 3000.1.3-rel.70+214db31
+  [context_id] => 7cd5258c04e749a5b67d184f6f200328
+  [context_label] => VOCE10001_2014_SM5
+  [launch_presentation_document_target] => window
+  [ext_launch_presentation_css_url] => https://sandpit.lms.unimelb.edu.au/common/shared.css,https://sandpit.lms.unimelb.edu.au/branding/themes/unimelb-201410-08/theme.css,https://sandpit.lms.unimelb.edu.au/branding/colorpalettes/unimelb-201404.08/generated/colorpalette.generated.modern.css
+
+)
+    */
 }

@@ -18,16 +18,17 @@ class MenuHandler implements Subscriber
         if (!\Lti\Provider::isLti()) return;
 
         // Hide the staff/student course menu
-        // TODO: This may not be the best solution to limiting the staff and student to the one course???? Test to see the workflow
         /** @var \App\Controller\Iface $controller */
         $controller = $event->get('controller');
         if(method_exists($controller, 'getPage')) {
             $page = $event->get('page');
-            $nav = $page->getNavbar();
-            //if ($nav instanceof \App\Ui\Navbar\StaffMenu || $nav instanceof \App\Ui\Navbar\StudentMenu) {
-            if ($nav instanceof \App\Ui\Navbar\StudentMenu) {
-                $nav->showCourseDropdown(false);
-            }
+
+            // Better off to set a flag in the config or something so the menu can check id the dropdown should be shown
+//            $nav = $page->getNavbar();
+//            //if ($nav instanceof \App\Ui\Navbar\StaffMenu || $nav instanceof \App\Ui\Navbar\StudentMenu) {
+//            if ($nav instanceof \App\Ui\Navbar\StudentMenu) {
+//                $nav->showCourseDropdown(false);
+//            }
         }
 
     }

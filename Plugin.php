@@ -54,9 +54,17 @@ class Plugin extends \Tk\Plugin\Iface
      *
      * @return \Tk\Plugin\Iface
      */
-    static function getInstance()
+    public static function getInstance()
     {
         return \Tk\Config::getInstance()->getPluginFactory()->getPlugin('ems-lti');
+    }
+
+    /**
+     * @return \App\PluginApi
+     */
+    public static function getPluginApi()
+    {
+        return \Tk\Config::getInstance()->getPluginApi();
     }
 
     /**
@@ -72,25 +80,22 @@ class Plugin extends \Tk\Plugin\Iface
     }
 
     /**
+     * @param \App\Db\Institution $institution
      * @return \Tk\Db\Data
      */
-    public static function getInstitutionData()
+    public static function getInstitutionData($institution)
     {
-        if (\Tk\Config::getInstance()->getUser() && !self::$institutionData) {
-            $institution = \Tk\Config::getInstance()->getUser()->getInstitution();
-            if ($institution)
-                self::$institutionData = \Tk\Db\Data::create(self::getInstance()->getName() . '.institution', $institution->getId());
-        }
-        return self::$institutionData;
+        \Tk\Config::getInstance()->setInstitution($institution);
+        return self::$institutionData = \Tk\Db\Data::create(self::getInstance()->getName() . '.institution', $institution->getId());
     }
 
     /**
-     *
+     * @param \App\Db\Institution $institution
      * @return \IMSGlobal\LTI\ToolProvider\ToolConsumer
      */
-    public static function getLtiConsumer()
+    public static function getLtiConsumer($institution)
     {
-        $data = self::getInstitutionData();
+        $data = self::getInstitutionData($institution);
         $key = $data->get(self::LTI_CURRENT_KEY);
         if ($key === '') $key = null;
         if (!self::$ltiConsumer && $key) {
@@ -119,15 +124,16 @@ class Plugin extends \Tk\Plugin\Iface
     /**
      * Return true if the plugin is enabled for this institution
      *
+     * @param \App\Db\Institution $institution
      * @return bool
      */
-    public static function isEnabled()
+    public static function isEnabled($institution)
     {
         $db = \App\Factory::getDb();
         if(!$db->tableExists(self::$LTI_DB_PREFIX.'lti2_consumer')) {
             return false;
         }
-        $data = self::getInstitutionData();
+        $data = self::getInstitutionData($institution);
         if ($data && $data->has(self::LTI_ENABLE)) {
             return $data->get(self::LTI_ENABLE);
         }
@@ -150,13 +156,12 @@ class Plugin extends \Tk\Plugin\Iface
     {
         include dirname(__FILE__) . '/config.php';
         $config = $this->getConfig();
-
         $this->getPluginFactory()->registerZonePlugin($this, self::ZONE_INSTITUTION);
-
         /** @var Dispatcher $dispatcher */
-        $dispatcher = \Tk\Config::getInstance()->getEventDispatcher();
+        $dispatcher = $config->getEventDispatcher();
         /** @var \App\Db\Institution $institution */
         $institution = $config->getInstitution();
+
         if($institution && $this->isZonePluginEnabled(self::ZONE_INSTITUTION, $institution->getId())) {
             $dispatcher->addSubscriber(new \Lti\Listener\AuthHandler());
             $dispatcher->addSubscriber(new \Lti\Listener\MenuHandler());
@@ -174,11 +179,6 @@ class Plugin extends \Tk\Plugin\Iface
     function doActivate()
     {
         // Init Plugin Settings
-//        $data = \Tk\Db\Data::create($this->getName());
-//        $data->set('plugin.title', 'EMS III LTI Plugin');
-//        $data->set('plugin.email', 'null@unimelb.edu.au');
-//        $data->save();
-
         $config = \Tk\Config::getInstance();
         $db = \App\Factory::getDb();
 
