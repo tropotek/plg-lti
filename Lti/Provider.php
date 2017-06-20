@@ -143,6 +143,8 @@ class Provider extends ToolProvider\ToolProvider
             if (!$this->user->email) {
                 throw new \Tk\Exception('User email not found! Cannot log in.');
             }
+            $ltiSesh = array_merge($_GET, $_POST);
+
             // Try to locate an existing user...
             $user = Plugin::getPluginApi()->findUser($this->user->email, $this->institution->getId());
             if (!$user) {
@@ -174,7 +176,8 @@ class Provider extends ToolProvider\ToolProvider
                     'password' => '',
                     'name' => $this->user->fullname,
                     'active' => true,
-                    'uid' => ''
+                    'uid' => '',
+                    'lti' => $ltiSesh
                 );
                 $user = Plugin::getPluginApi()->createUser($params);
             }
@@ -182,10 +185,11 @@ class Provider extends ToolProvider\ToolProvider
             if (!$user->active) {
                 throw new \Tk\Exception('User has no permission to access this resource. Contact your administrator.');
             }
-            $ltiSesh = array_merge($_GET, $_POST);
 
             // Add user to course if found.
             if (empty($ltiSesh['context_label'])) throw new \Tk\Exception('Course not available, Please contact LMS administrator.');
+
+            \Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiSesh);
 
             $courseCode = preg_replace('/[^a-z0-9_-]/i', '_', $ltiSesh['context_label']);
             $course = null;
@@ -210,13 +214,12 @@ class Provider extends ToolProvider\ToolProvider
                     'description' => '',
                     'dateStart' => \Tk\Date::create(),
                     'dateEnd' => \Tk\Date::create()->add(new \DateInterval('P1Y')),
-                    'active' => true
+                    'active' => true,
+                    'user' => $user,
+                    'lti' => $ltiSesh
                 );
                 $course = Plugin::getPluginApi()->createCourse($params);
             }
-            Plugin::getPluginApi()->addUserToCourse($user, $course);
-            //CourseMap::create()->addStudent($course->id, $user->id);
-            \Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiSesh);
 
             // Add user to auth
             $authResult = Plugin::getPluginApi()->autoAuthenticate($user);
