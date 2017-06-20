@@ -61,14 +61,19 @@ class InstitutionSettings extends Iface
         $this->form = \App\Factory::createForm('formEdit');
         $this->form->setParam('renderer', \App\Factory::createFormRenderer($this->form));
 
-        $this->form->addField(new Field\Checkbox(\Lti\Plugin::LTI_ENABLE))->addCss('tk-input-toggle')->setLabel('Enable LTI')->setTabGroup('LTI')->setNotes('Enable the LTI launch URL for LMS systems.');
-        $lurl = \Tk\Uri::create('/lti/'.$this->institution->getHash().'/launch.html')->toString();
+        $this->form->addField(new Field\Checkbox(\Lti\Plugin::LTI_ENABLE))->addCss('tk-input-toggle')->setLabel('Enable LTI')->
+            setTabGroup('LTI')->setNotes('Enable the LTI launch URL for LMS systems.');
+
+        $lurl = \Tk\Uri::create('/lti/'.$this->institution->getHash().'/launch.html');
         if ($this->institution->domain)
-            $lurl = \Tk\Uri::create('/lti/launch.html')->setHost($this->institution->domain)->toString();
+            $lurl = \Tk\Uri::create('/lti/launch.html')->setHost($this->institution->domain);
+        $lurl->setScheme('https')->toString();
         $this->form->addField(new Field\Html(\Lti\Plugin::LTI_URL, $lurl))->setLabel('Launch Url')->setTabGroup('LTI');
         $this->institution->getData()->set(\Lti\Plugin::LTI_URL, $lurl);
+
         $this->form->addField(new Field\Input(\Lti\Plugin::LTI_KEY))->setLabel('LTI Key')->setTabGroup('LTI');
-        $this->form->addField(new Field\Input(\Lti\Plugin::LTI_SECRET))->setLabel('LTI Secret')->setTabGroup('LTI')->setAttr('placeholder', 'Auto Generate');
+        $this->form->addField(new Field\Input(\Lti\Plugin::LTI_SECRET))->setLabel('LTI Secret')->setTabGroup('LTI')->
+            setAttr('placeholder', 'Auto Generate');
         
         $this->form->addField(new Event\Button('update', array($this, 'doSubmit')));
         $this->form->addField(new Event\Button('save', array($this, 'doSubmit')));
@@ -199,7 +204,6 @@ class InstitutionSettings extends Iface
         <div class="row">
           <div class="col-lg-12">
             <div var="formEdit"></div>
-      
             <hr/>
             <p>Includes support for LTI 1.1 and the unofficial extensions to LTI 1.0, as well as the registration process and services of LTI 2.0.</p>
           </div>
