@@ -233,8 +233,10 @@ class Provider extends ToolProvider\ToolProvider
                 $event->set('isLti', true);
                 $this->dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $event);
             }
+            vd('WHAT THE!!!!!!!!!!!');
             // Redirect to the course page
-            \App\Uri::createHomeUrl($course->code . '/index.html')->redirect();
+            //$user->getHomeUrl()->redirect();
+            //\Tk\Uri::create('/index.html')->redirect();
 
         } catch (\Exception $e) {
             vd($e->__toString());

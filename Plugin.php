@@ -159,13 +159,7 @@ class Plugin extends \Tk\Plugin\Iface
         $this->getPluginFactory()->registerZonePlugin($this, self::ZONE_INSTITUTION);
         /** @var Dispatcher $dispatcher */
         $dispatcher = $config->getEventDispatcher();
-        /** @var \App\Db\Institution $institution */
-        $institution = $config->getInstitution();
-
-        if($institution && $this->isZonePluginEnabled(self::ZONE_INSTITUTION, $institution->getId())) {
-            $dispatcher->addSubscriber(new \Lti\Listener\AuthHandler());
-            $dispatcher->addSubscriber(new \Lti\Listener\MenuHandler());
-        }
+        $dispatcher->addSubscriber(new \Lti\Listener\SetupHandler());
 
     }
 

@@ -23,7 +23,7 @@ class MenuHandler implements Subscriber
         if(method_exists($controller, 'getPage')) {
             $page = $event->get('page');
 
-            // Better off to set a flag in the config or something so the menu can check id the dropdown should be shown
+            // TODO: Better off to set a flag in the config or something so the menu can check id the dropdown should be shown
 //            $nav = $page->getNavbar();
 //            //if ($nav instanceof \App\Ui\Navbar\StaffMenu || $nav instanceof \App\Ui\Navbar\StudentMenu) {
 //            if ($nav instanceof \App\Ui\Navbar\StudentMenu) {

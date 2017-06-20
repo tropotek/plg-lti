@@ -128,10 +128,10 @@ class InstitutionSettings extends Iface
             $this->data->set(\Lti\Plugin::LTI_CURRENT_KEY, $consumer->getKey());
             $this->data->set(\Lti\Plugin::LTI_CURRENT_ID, $consumer->getRecordId());
             $this->data->set(\Lti\Plugin::LTI_SECRET, $consumer->secret);
-            $url = \Tk\Uri::create('/lti/'.$this->institution->getHash().'/launch.html')->toString();
+            $url = \Tk\Uri::create('/lti/'.$this->institution->getHash().'/launch.html');
             if ($this->institution->domain)
-                $url = \Tk\Uri::create('http://'.$this->institution->domain.'/lti/launch.html')->toString();
-            $this->data->set(\Lti\Plugin::LTI_URL, $url);
+                $url = \Tk\Uri::create('http://'.$this->institution->domain.'/lti/launch.html');
+            $this->data->set(\Lti\Plugin::LTI_URL, $url->setScheme('https')->toString());
 
         } else {
             if ($consumer) {

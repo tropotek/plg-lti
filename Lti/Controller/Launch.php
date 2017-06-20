@@ -21,13 +21,6 @@ class Launch extends Iface
      */
     protected $institution = null;
 
-    /**
-     *
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
 
     /**
      *
@@ -57,7 +50,6 @@ class Launch extends Iface
         }
 
         if (!$request->has('lti_version') || !$request->has('ext_lms')) {
-            //throw new \Tk\NotFoundHttpException('LTI request not found.');
             return $this->show();
         }
 

@@ -1,6 +1,7 @@
 <?php
 namespace Lti\Listener;
 
+use Lti\Plugin;
 use Tk\Event\Subscriber;
 use Tk\Event\AuthEvent;
 use Tk\Auth\AuthEvents;
@@ -24,7 +25,6 @@ class AuthHandler implements Subscriber
 
     }
 
-
     /**
      * @param AuthEvent $event
      * @throws \Exception
@@ -32,11 +32,11 @@ class AuthHandler implements Subscriber
     public function onLoginSuccess(AuthEvent $event)
     {
         if ($event->get('isLti') === true) {
-
+            //$event->setRedirect(Plugin::getPluginApi()->getLtiHome($event->get('user'), $event->get('course')));
             $event->setRedirect(null);
             \App\Factory::getSession()->set('auth.password.access', false);
+            Plugin::getPluginApi()->getLtiHome($event->get('user'), $event->get('course'))->redirect();
         }
-
     }
 
     /**
@@ -50,7 +50,6 @@ class AuthHandler implements Subscriber
             $event->setRedirect(\Tk\Uri::create($ltiSess['launch_presentation_return_url']));
         }
     }
-
 
     /**
      * Returns an array of event names this subscriber wants to listen to.

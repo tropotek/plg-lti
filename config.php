@@ -23,7 +23,7 @@ $params = array('role' => 'admin');
 $routes->add('LTI Admin Settings', new \Tk\Routing\Route('/lti/adminSettings.html', 'Lti\Controller\SystemSettings::doDefault', $params));
 
 
-$params = array('role' => 'client');
+$params = array('role' => array('admin', 'client'));
 $routes->add('LTI Institution Settings', new \Tk\Routing\Route('/lti/institutionSettings.html', 'Lti\Controller\InstitutionSettings::doDefault', $params));
 
 
