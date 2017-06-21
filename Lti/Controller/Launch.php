@@ -45,6 +45,7 @@ class Launch extends Iface
     {
         if (!$this->institution)
             $this->institution = \App\Db\InstitutionMap::create()->findByHash($instHash);
+
         if (!$this->institution) {
             throw new \Tk\NotFoundHttpException('Institution not found.');
         }
