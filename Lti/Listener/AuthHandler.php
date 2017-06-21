@@ -76,7 +76,7 @@ class AuthHandler implements Subscriber
         return array(
             //AuthEvents::LOGIN => array('onLogin', 0),
             AuthEvents::LOGIN_SUCCESS => array('onLoginSuccess', 0),
-            AuthEvents::LOGOUT => array('onLogout', 0)
+            AuthEvents::LOGOUT => array('onLogout', 10)
         );
     }
     
