@@ -177,40 +177,27 @@ class InstitutionSettings extends Iface
     public function __makeTemplate()
     {
         $xhtml = <<<XHTML
-<div class="row" var="content">
+<div var="content">
 
-  <div class="col-lg-12">
     <div class="panel panel-default">
-      <div class="panel-heading">
-        <i class="fa fa-cogs fa-fw"></i> Actions
-      </div>
-      <div class="panel-body ">
-        <div class="row">
-          <div class="col-lg-12">
-            <a href="javascript: window.history.back();" class="btn btn-default"><i class="fa fa-arrow-left"></i> <span>Back</span></a>
-          </div>
-        </div>
+      <div class="panel-heading"><i class="fa fa-cogs fa-fw"></i> Actions</div>
+      <div class="panel-body " var="action-panel">
+        <a href="javascript: window.history.back();" class="btn btn-default"><i class="fa fa-arrow-left"></i> <span>Back</span></a>
       </div>
     </div>
-  </div>
   
-  <div class="col-lg-12">
     <div class="panel panel-default">
       <div class="panel-heading">
         <i class="fa fa-cog"></i>
         LTI Settings
       </div>
       <div class="panel-body">
-        <div class="row">
-          <div class="col-lg-12">
-            <div var="formEdit"></div>
-            <hr/>
-            <p>Includes support for LTI 1.1 and the unofficial extensions to LTI 1.0, as well as the registration process and services of LTI 2.0.</p>
-          </div>
-        </div>
+        <div var="formEdit"></div>
+        <hr/>
+        <p>Includes support for LTI 1.1 and the unofficial extensions to LTI 1.0, as well as the registration process and services of LTI 2.0.</p>
       </div>
     </div>
-  </div>
+  
 </div>
 XHTML;
 
