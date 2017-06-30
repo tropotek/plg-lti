@@ -23,23 +23,20 @@ class Launch extends Iface
 
 
     /**
-     *
      * @param Request $request
-     * @return \App\Page\Iface|Template|string
      */
     public function doLaunch(Request $request)
     {
         $this->institution = \App\Db\InstitutionMap::create()->findByDomain($request->getUri()->getHost());
         if ($this->institution) {
-            return $this->doInsLaunch($request, $this->institution->getHash());
+            $this->doInsLaunch($request, $this->institution->getHash());
         }
-        return $this->show();
     }
 
     /**
      *
      * @param Request $request
-     * @return \App\Page\Iface|Template|string
+     * @return \Dom\Template|Template|string
      */
     public function doInsLaunch(Request $request, $instHash)
     {
@@ -71,18 +68,15 @@ class Launch extends Iface
         }
 
         $this->getTemplate()->insertHtml('message', trim($msg, '<br/>'));
-
-        return $this->show();
     }
 
     /**
-     * @return \App\Page\Iface
+     * @return \Dom\Template
      */
     public function show()
     {
-        $template = $this->getTemplate();
-        
-        return $this->getPage()->setPageContent($template);
+        $template = parent::show();
+        return $template;
     }
 
     /**

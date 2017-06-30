@@ -1,7 +1,6 @@
 <?php
 namespace Lti\Controller;
 
-
 use Tk\Request;
 use Tk\Form;
 use Tk\Form\Event;
@@ -42,16 +41,13 @@ class InstitutionSettings extends Iface
         parent::__construct();
         $this->setPageTitle('LDAP Plugin - Institution Settings');
 
-//        /** @var \Lti\Plugin $plugin */
-//        $plugin = \Lti\Plugin::getInstance();
-
     }
 
     /**
      * doDefault
      *
      * @param Request $request
-     * @return \App\Page\Iface
+     * @return \Dom\Template
      */
     public function doDefault(Request $request)
     {
@@ -82,7 +78,6 @@ class InstitutionSettings extends Iface
         $this->form->load($this->data->toArray());
         $this->form->execute();
 
-        return $this->show();
     }
 
     /**
@@ -157,16 +152,16 @@ class InstitutionSettings extends Iface
     /**
      * show()
      *
-     * @return \App\Page\Iface
+     * @return \Dom\Template
      */
     public function show()
     {
-        $template = $this->getTemplate();
+        $template = parent::show();
         
         // Render the form
         $template->insertTemplate($this->form->getId(), $this->form->getParam('renderer')->show()->getTemplate());
 
-        return $this->getPage()->setPageContent($template);
+        return $template;
     }
 
     /**

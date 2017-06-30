@@ -42,10 +42,7 @@ class SystemSettings extends Iface
     }
 
     /**
-     * doDefault
-     *
      * @param Request $request
-     * @return \App\Page\Iface
      */
     public function doDefault(Request $request)
     {
@@ -62,7 +59,6 @@ class SystemSettings extends Iface
         $this->form->load($this->data->toArray());
         $this->form->execute();
 
-        return $this->show();
     }
 
     /**
@@ -98,16 +94,16 @@ class SystemSettings extends Iface
     /**
      * show()
      *
-     * @return \App\Page\Iface
+     * @return \Dom\Template
      */
     public function show()
     {
-        $template = $this->getTemplate();
+        $template = parent::show();
         
         // Render the form
         $template->insertTemplate($this->form->getId(), $this->form->getParam('renderer')->show()->getTemplate());
 
-        return $this->getPage()->setPageContent($template);
+        return $template;
     }
 
     /**
