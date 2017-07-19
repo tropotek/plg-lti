@@ -54,7 +54,7 @@ class MenuHandler implements Subscriber
     public static function getSubscribedEvents()
     {
         return array(
-            \App\AppEvents::PAGE_INIT => array('onInit', 0),
+            \Tk\PageEvents::PAGE_INIT => array('onInit', 0),
             \Tk\Kernel\KernelEvents::CONTROLLER => array('onController', 0)
         );
     }
