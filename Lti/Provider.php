@@ -231,8 +231,10 @@ class Provider extends ToolProvider\ToolProvider
                 $event->set('course', $course);
                 $event->set('isLti', true);
                 $this->dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $event);
+                if ($event->getRedirect())
+                    $event->getRedirect()->redirect();
             }
-            \Tk\Config::getInstance()->getLog()->warning('Remember to redirect in the login success event.');
+            \Tk\Config::getInstance()->getLog()->warning('Remember to redirect to a valid LTI page.');
         } catch (\Exception $e) {
             vd($e->__toString());
             $this->reason = $e->__toString();
