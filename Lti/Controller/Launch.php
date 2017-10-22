@@ -34,7 +34,6 @@ class Launch extends Iface
     }
 
     /**
-     *
      * @param Request $request
      * @return \Dom\Template|Template|string
      */
@@ -53,16 +52,17 @@ class Launch extends Iface
 
         $msg = '';
         if(\Lti\Plugin::getInstance()->isActive()) {
-            $tool = new \Lti\Provider(\Lti\Plugin::getLtiDataConnector(), $this->institution, $this->getConfig()->getEventDispatcher());
+            $provider = new \Lti\Provider(\Lti\Plugin::getLtiDataConnector(), $this->institution, $this->getConfig()->getEventDispatcher());
             $_POST['custom_tc_profile_url'] = '';   // Hack to speed up the launch as we do not need this url
-            $tool->handleRequest();
+            $provider->handleRequest();
 
-            if ($tool->message) {
-                $msg .= $tool->message . '<br/>';
+            if ($provider->message) {
+                $msg .= $provider->message . '<br/>';
             }
-            if ($tool->reason) {
-                $msg .= $tool->reason . '<br/>';
+            if ($provider->reason) {
+                $msg .= $provider->reason . '<br/>';
             }
+            $this->getConfig()->set('lti.provider', $provider);
         } else {
             $msg = 'LTI is not enabled for this Institution';
         }
