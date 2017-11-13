@@ -4,7 +4,7 @@ namespace Lti\Controller;
 use Tk\Request;
 use Dom\Template;
 use App\Controller\Iface;
-
+use Lti\Plugin;
 
 /**
  *
@@ -51,8 +51,8 @@ class Launch extends Iface
         }
 
         $msg = '';
-        if(\Lti\Plugin::getInstance()->isActive()) {
-            $provider = new \Lti\Provider(\Lti\Plugin::getLtiDataConnector(), $this->institution, $this->getConfig()->getEventDispatcher());
+        if(Plugin::getInstance()->isActive()) {
+            $provider = new \Lti\Provider(Plugin::getLtiDataConnector(), $this->institution, $this->getConfig()->getEventDispatcher());
             $_POST['custom_tc_profile_url'] = '';   // Hack to speed up the launch as we do not need this url
             $provider->handleRequest();
 

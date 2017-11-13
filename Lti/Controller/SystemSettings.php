@@ -6,6 +6,7 @@ use Tk\Form;
 use Tk\Form\Event;
 use Tk\Form\Field;
 use App\Controller\Iface;
+use Lti\Plugin;
 
 /**
  * Class Contact
@@ -36,7 +37,7 @@ class SystemSettings extends Iface
         $this->setPageTitle('LDAP Plugin Settings');
 
         /** @var \Lti\Plugin $plugin */
-        $plugin = \Lti\Plugin::getInstance();
+        $plugin = Plugin::getInstance();
         $this->data = \Tk\Db\Data::create($plugin->getName());
     }
 

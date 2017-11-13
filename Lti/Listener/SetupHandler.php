@@ -2,10 +2,9 @@
 namespace Lti\Listener;
 
 use Tk\Event\Subscriber;
+use Lti\Plugin;
 
 /**
- * Class StartupHandler
- *
  * @author Michael Mifsud <info@tropotek.com>
  * @link http://www.tropotek.com/
  * @license Copyright 2015 Michael Mifsud
@@ -18,7 +17,7 @@ class SetupHandler implements Subscriber
     {
         $config = \Tk\Config::getInstance();
         $institution = \App\Factory::getInstitution();
-        if($institution && \Lti\Plugin::getInstance()->isZonePluginEnabled(\Lti\Plugin::ZONE_INSTITUTION, $institution->getId())) {
+        if($institution && Plugin::getInstance()->isZonePluginEnabled(Plugin::ZONE_INSTITUTION, $institution->getId())) {
             $dispatcher = \App\Factory::getEventDispatcher();
             $dispatcher->addSubscriber(new \Lti\Listener\AuthHandler());
             $dispatcher->addSubscriber(new \Lti\Listener\MenuHandler());

@@ -52,7 +52,7 @@ class Plugin extends \Tk\Plugin\Iface
     /**
      * A helper method to get the Plugin instance globally
      *
-     * @return \Tk\Plugin\Iface
+     * @return static
      */
     public static function getInstance()
     {
@@ -198,7 +198,7 @@ class Plugin extends \Tk\Plugin\Iface
         $db->query($sql);
 
         // Delete all LTI tables.
-        $sql = sprintf("SHOW TABLES LIKE '%slti2\_%%' ", $db->escapeString(\Lti\Plugin::$LTI_DB_PREFIX));
+        $sql = sprintf("SHOW TABLES LIKE '%slti2\_%%' ", $db->escapeString(Plugin::$LTI_DB_PREFIX));
         $result = $db->query($sql);
         foreach ($result->fetchAll(\PDO::FETCH_ASSOC) as $row) {
             $db->dropTable(current($row));

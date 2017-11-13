@@ -6,6 +6,7 @@ use Tk\Form;
 use Tk\Form\Event;
 use Tk\Form\Field;
 use App\Controller\Iface;
+use Lti\Plugin;
 
 /**
  * Class Contact
@@ -51,23 +52,23 @@ class InstitutionSettings extends Iface
     public function doDefault(Request $request)
     {
         $this->institution = \App\Db\InstitutionMap::create()->find($request->get('zoneId'));
-        $this->data = \Lti\Plugin::getInstitutionData($this->institution);
+        $this->data = Plugin::getInstitutionData($this->institution);
 
         $this->form = \App\Factory::createForm('formEdit');
         $this->form->setParam('renderer', \App\Factory::createFormRenderer($this->form));
 
-        $this->form->addField(new Field\Checkbox(\Lti\Plugin::LTI_ENABLE))->addCss('tk-input-toggle')->setLabel('Enable LTI')->
+        $this->form->addField(new Field\Checkbox(Plugin::LTI_ENABLE))->addCss('tk-input-toggle')->setLabel('Enable LTI')->
             setTabGroup('LTI')->setNotes('Enable the LTI launch URL for LMS systems.');
 
         $lurl = \Tk\Uri::create('/lti/'.$this->institution->getHash().'/launch.html');
         if ($this->institution->domain)
             $lurl = \Tk\Uri::create('/lti/launch.html')->setHost($this->institution->domain);
         $lurl->setScheme('https')->toString();
-        $this->form->addField(new Field\Html(\Lti\Plugin::LTI_URL, $lurl))->setLabel('Launch Url')->setTabGroup('LTI');
-        $this->institution->getData()->set(\Lti\Plugin::LTI_URL, $lurl);
+        $this->form->addField(new Field\Html(Plugin::LTI_URL, $lurl))->setLabel('Launch Url')->setTabGroup('LTI');
+        $this->institution->getData()->set(Plugin::LTI_URL, $lurl);
 
-        $this->form->addField(new Field\Input(\Lti\Plugin::LTI_KEY))->setLabel('LTI Key')->setTabGroup('LTI');
-        $this->form->addField(new Field\Input(\Lti\Plugin::LTI_SECRET))->setLabel('LTI Secret')->setTabGroup('LTI')->
+        $this->form->addField(new Field\Input(Plugin::LTI_KEY))->setLabel('LTI Key')->setTabGroup('LTI');
+        $this->form->addField(new Field\Input(Plugin::LTI_SECRET))->setLabel('LTI Secret')->setTabGroup('LTI')->
             setAttr('placeholder', 'Auto Generate');
         
         $this->form->addField(new Event\Button('update', array($this, 'doSubmit')));
@@ -90,17 +91,17 @@ class InstitutionSettings extends Iface
         $this->data->replace($values);
 
         // validate LTI consumer key
-        $lid = (int)$this->data->get(\Lti\Plugin::LTI_CURRENT_ID);
+        $lid = (int)$this->data->get(Plugin::LTI_CURRENT_ID);
         
-        if ($form->getFieldValue(\Lti\Plugin::LTI_ENABLE)) {
-            if (!$form->getFieldValue(\Lti\Plugin::LTI_KEY)) {
-                $form->addFieldError(\Lti\Plugin::LTI_KEY, 'Please enter a LTI Key');
+        if ($form->getFieldValue(Plugin::LTI_ENABLE)) {
+            if (!$form->getFieldValue(Plugin::LTI_KEY)) {
+                $form->addFieldError(Plugin::LTI_KEY, 'Please enter a LTI Key');
             }
-            if (!$form->getFieldValue(\Lti\Plugin::LTI_SECRET) && $lid > 0) {
-                $form->addFieldError(\Lti\Plugin::LTI_SECRET, 'Please enter a LTI secret code');
+            if (!$form->getFieldValue(Plugin::LTI_SECRET) && $lid > 0) {
+                $form->addFieldError(Plugin::LTI_SECRET, 'Please enter a LTI secret code');
             }
-            if (\Lti\Plugin::ltiKeyExists($form->getFieldValue(\Lti\Plugin::LTI_KEY), $lid)) {
-                $form->addFieldError(\Lti\Plugin::LTI_KEY, 'This LTI key already exists for another Institution.');
+            if (Plugin::ltiKeyExists($form->getFieldValue(Plugin::LTI_KEY), $lid)) {
+                $form->addFieldError(Plugin::LTI_KEY, 'This LTI key already exists for another Institution.');
             }
         }
 
@@ -111,26 +112,26 @@ class InstitutionSettings extends Iface
         // unimelb_00002
         // 1f72a0bac401a3e375e737185817463c
 
-        $consumer = \Lti\Plugin::getLtiConsumer($this->institution);
-        if ($this->data->get(\Lti\Plugin::LTI_ENABLE)) {
+        $consumer = Plugin::getLtiConsumer($this->institution);
+        if ($this->data->get(Plugin::LTI_ENABLE)) {
             if (!$consumer) {
-                $consumer = new \IMSGlobal\LTI\ToolProvider\ToolConsumer(null, \Lti\Plugin::getLtiDataConnector());
+                $consumer = new \IMSGlobal\LTI\ToolProvider\ToolConsumer(null, Plugin::getLtiDataConnector());
             }
-            $consumer->setKey($this->data->get(\Lti\Plugin::LTI_KEY));
-            if ($this->data->get(\Lti\Plugin::LTI_SECRET)) {
-                $consumer->secret = $this->data->get(\Lti\Plugin::LTI_SECRET);
+            $consumer->setKey($this->data->get(Plugin::LTI_KEY));
+            if ($this->data->get(Plugin::LTI_SECRET)) {
+                $consumer->secret = $this->data->get(Plugin::LTI_SECRET);
             }
             $consumer->enabled = true;
             $consumer->name = $this->institution->name;
             $consumer->save();
 
-            $this->data->set(\Lti\Plugin::LTI_CURRENT_KEY, $consumer->getKey());
-            $this->data->set(\Lti\Plugin::LTI_CURRENT_ID, $consumer->getRecordId());
-            $this->data->set(\Lti\Plugin::LTI_SECRET, $consumer->secret);
+            $this->data->set(Plugin::LTI_CURRENT_KEY, $consumer->getKey());
+            $this->data->set(Plugin::LTI_CURRENT_ID, $consumer->getRecordId());
+            $this->data->set(Plugin::LTI_SECRET, $consumer->secret);
             $url = \Tk\Uri::create('/lti/'.$this->institution->getHash().'/launch.html');
             if ($this->institution->domain)
                 $url = \Tk\Uri::create('http://'.$this->institution->domain.'/lti/launch.html');
-            $this->data->set(\Lti\Plugin::LTI_URL, $url->setScheme('https')->toString());
+            $this->data->set(Plugin::LTI_URL, $url->setScheme('https')->toString());
 
         } else {
             if ($consumer) {

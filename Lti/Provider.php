@@ -7,8 +7,6 @@ use IMSGlobal\LTI\ToolProvider\DataConnector\DataConnector;
 use Tk\Event\Dispatcher;
 
 /**
- * Class Provider
- *
  * @author Michael Mifsud <info@tropotek.com>
  * @link http://www.tropotek.com/
  * @license Copyright 2016 Michael Mifsud
