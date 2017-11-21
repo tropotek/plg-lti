@@ -145,6 +145,7 @@ class Provider extends ToolProvider\ToolProvider
 
             // Try to locate an existing user...
             $user = Plugin::getPluginApi()->findUser($this->user->email, $this->institution->getId());
+//vd($user);
             if (!$user) {
                 // Create new user
                 $role = 'student';
@@ -179,8 +180,8 @@ class Provider extends ToolProvider\ToolProvider
                 );
                 $user = Plugin::getPluginApi()->createUser($params);
             }
-
-            if (!$user->active) {
+//vd($user);
+            if (!$user->active || !$user->hasRole(array(\App\Db\UserGroup::ROLE_STAFF, \App\Db\UserGroup::ROLE_STUDENT))) {
                 throw new \Tk\Exception('User has no permission to access this resource. Contact your administrator.');
             }
 
@@ -190,7 +191,13 @@ class Provider extends ToolProvider\ToolProvider
 
             $courseCode = preg_replace('/[^a-z0-9_-]/i', '_', $ltiSesh['context_label']);
             $course = null;
-            if (!empty($ltiSesh['lti_courseId'])) {     // Force course selection via passed param in the LTI launch url:  {launchUrl}?lti_courseId=3
+            if (!empty($ltiSesh['courseId'])) {     // Force course selection via passed param in the LTI launch url:  {launchUrl}?lti_courseId=3
+                /** @var \App\Db\Course $course */
+                $course = Plugin::getPluginApi()->findCourse($ltiSesh['courseId']);
+                if (!$course || ($course->institutionId != $this->institution->getId())) {
+                    $course = null;
+                }
+            } else if (!empty($ltiSesh[self::LTI_COURSE_ID])) {     // Force course selection via passed param in the LTI launch url:  {launchUrl}?lti_courseId=3
                 /** @var \App\Db\Course $course */
                 $course = Plugin::getPluginApi()->findCourse($ltiSesh[self::LTI_COURSE_ID]);
                 if (!$course || ($course->institutionId != $this->institution->getId())) {
@@ -237,7 +244,6 @@ class Provider extends ToolProvider\ToolProvider
             }
             \Tk\Config::getInstance()->getLog()->warning('Remember to redirect to a valid LTI page.');
         } catch (\Exception $e) {
-            vd($e->__toString());
             $this->reason = $e->__toString();
             $this->message = $e->getMessage();  // This will be shown in the host app
             $this->ok = false;
