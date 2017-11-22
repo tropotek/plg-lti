@@ -101,7 +101,7 @@ class SystemSettings extends Iface
         $template = parent::show();
         
         // Render the form
-        $template->insertTemplate($this->form->getId(), $this->form->getRenderer()->show()->getTemplate());
+        $template->insertTemplate($this->form->getId(), $this->form->getRenderer()->show());
 
         return $template;
     }
