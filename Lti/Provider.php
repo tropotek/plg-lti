@@ -145,7 +145,7 @@ class Provider extends ToolProvider\ToolProvider
 
             // Try to locate an existing user...
             $user = Plugin::getPluginApi()->findUser($this->user->email, $this->institution->getId());
-//vd($user);
+            //vd($user);
             if (!$user) {
                 // Create new user
                 $role = 'student';
@@ -180,7 +180,7 @@ class Provider extends ToolProvider\ToolProvider
                 );
                 $user = Plugin::getPluginApi()->createUser($params);
             }
-//vd($user);
+
             if (!$user->active || !$user->hasRole(array(\App\Db\UserGroup::ROLE_STAFF, \App\Db\UserGroup::ROLE_STUDENT))) {
                 throw new \Tk\Exception('User has no permission to access this resource. Contact your administrator.');
             }
