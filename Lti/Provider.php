@@ -197,7 +197,6 @@ class Provider extends ToolProvider\ToolProvider
                 $ltiSesh[self::LTI_COURSE_ID] = $ltiSesh['courseId'];
             }
 
-            vd($ltiSesh);
 
             if (!empty($ltiSesh[self::LTI_COURSE_ID])) {     // Force course selection via passed param in the LTI launch url:  {launchUrl}?lti_courseId=3
                 /** @var \App\Db\Course $course */
@@ -212,6 +211,7 @@ class Provider extends ToolProvider\ToolProvider
                 }
             }
             \Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiSesh);
+            vd($ltiSesh);
 
             if (!$course) {
                 if (!$this->user->isStaff()) throw new \Tk\Exception('Course not available, Please contact course coordinator.');
