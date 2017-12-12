@@ -14,7 +14,7 @@ use Tk\Event\Dispatcher;
 class Provider extends ToolProvider\ToolProvider
 {
     const LTI_LAUNCH = 'lti_launch';
-    const LTI_COURSE_ID = 'lti_courseId';
+    const LTI_COURSE_ID = 'custom_courseid';
 
     /**
      * @var \App\Db\Course
@@ -191,16 +191,18 @@ class Provider extends ToolProvider\ToolProvider
 
             $courseCode = preg_replace('/[^a-z0-9_-]/i', '_', $ltiSesh['context_label']);
             $course = null;
-            if (!empty($ltiSesh['courseId'])) {     // Force course selection via passed param in the LTI launch url:  {launchUrl}?lti_courseId=3
-                /** @var \App\Db\Course $course */
-                $course = Plugin::getPluginApi()->findCourse($ltiSesh['courseId']);
-                if (!$course || ($course->institutionId != $this->institution->getId())) {
-                    $course = null;
-                }
-            } else if (!empty($ltiSesh[self::LTI_COURSE_ID])) {     // Force course selection via passed param in the LTI launch url:  {launchUrl}?lti_courseId=3
+
+
+            if (!empty($ltiSesh['courseId']) && empty($ltiSesh[self::LTI_COURSE_ID])) {
+                $ltiSesh[self::LTI_COURSE_ID] = $ltiSesh['courseId'];
+            }
+
+            vd($ltiSesh);
+
+            if (!empty($ltiSesh[self::LTI_COURSE_ID])) {     // Force course selection via passed param in the LTI launch url:  {launchUrl}?lti_courseId=3
                 /** @var \App\Db\Course $course */
                 $course = Plugin::getPluginApi()->findCourse($ltiSesh[self::LTI_COURSE_ID]);
-                if (!$course || ($course->institutionId != $this->institution->getId())) {
+                if ($course->institutionId != $this->institution->getId()) {
                     $course = null;
                 }
             } else {
@@ -228,6 +230,10 @@ class Provider extends ToolProvider\ToolProvider
                 );
                 $course = Plugin::getPluginApi()->createCourse($params);
             }
+            // Check if user is enrolled in course if not do so.
+            Plugin::getPluginApi()->addUserToCourse($course, $user);
+
+
 
             // Add user to auth
             $authResult = Plugin::getPluginApi()->autoAuthenticate($user);
