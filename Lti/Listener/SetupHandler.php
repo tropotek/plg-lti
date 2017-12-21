@@ -15,10 +15,10 @@ class SetupHandler implements Subscriber
 
     public function onRequest(\Tk\Event\GetResponseEvent $event)
     {
-        $config = \Tk\Config::getInstance();
-        $institution = \App\Factory::getInstitution();
+        $config = \Uni\Config::getInstance();
+        $institution = $config->getInstitution();
         if($institution && Plugin::getInstance()->isZonePluginEnabled(Plugin::ZONE_INSTITUTION, $institution->getId())) {
-            $dispatcher = \App\Factory::getEventDispatcher();
+            $dispatcher = $config->getEventDispatcher();
             $dispatcher->addSubscriber(new \Lti\Listener\AuthHandler());
             $dispatcher->addSubscriber(new \Lti\Listener\MenuHandler());
         }

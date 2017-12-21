@@ -74,7 +74,7 @@ class Plugin extends \Tk\Plugin\Iface
     public static function getLtiDataConnector()
     {
         if (!self::$dataConnector) {
-            self::$dataConnector = \IMSGlobal\LTI\ToolProvider\DataConnector\DataConnector::getDataConnector(self::$LTI_DB_PREFIX, \App\Factory::getDb(), 'pdo');
+            self::$dataConnector = \IMSGlobal\LTI\ToolProvider\DataConnector\DataConnector::getDataConnector(self::$LTI_DB_PREFIX, \Uni\Config::getInstance()->getDb(), 'pdo');
         }
         return self::$dataConnector;
     }
@@ -85,7 +85,7 @@ class Plugin extends \Tk\Plugin\Iface
      */
     public static function getInstitutionData($institution)
     {
-        \Tk\Config::getInstance()->setInstitution($institution);
+        \Uni\Config::getInstance()->setInstitution($institution);
         return self::$institutionData = \Tk\Db\Data::create(self::getInstance()->getName() . '.institution', $institution->getId());
     }
 
@@ -110,10 +110,11 @@ class Plugin extends \Tk\Plugin\Iface
      *
      * @param $consumer_key256
      * @return bool
+     * @throws \Tk\Db\Exception
      */
     public static function ltiKeyExists($consumer_key256, $ignoreId = 0)
     {
-        $db = \App\Factory::getDb();
+        $db = \Uni\Config::getInstance()->getDb();
         $sql = sprintf('SELECT * FROM %s WHERE consumer_key256 = %s', $db->quoteParameter(self::$LTI_DB_PREFIX.'lti2_consumer'), $db->quote($consumer_key256));
         if ($ignoreId) {
             $sql .= sprintf(' AND consumer_pk != %s ', (int)$ignoreId);
@@ -129,8 +130,8 @@ class Plugin extends \Tk\Plugin\Iface
      */
     public static function isEnabled($institution)
     {
-        $db = \App\Factory::getDb();
-        if(!$db->tableExists(self::$LTI_DB_PREFIX.'lti2_consumer')) {
+        $db = \Uni\Config::getInstance()->getDb();
+        if(!$db->hasTable(self::$LTI_DB_PREFIX.'lti2_consumer')) {
             return false;
         }
         $data = self::getInstitutionData($institution);
@@ -169,12 +170,14 @@ class Plugin extends \Tk\Plugin\Iface
      * Will only be called when activating the plugin in the
      * plugin control panel
      *
+     * @throws \Tk\Exception
+     * @throws \Exception
      */
     function doActivate()
     {
         // Init Plugin Settings
         $config = \Tk\Config::getInstance();
-        $db = \App\Factory::getDb();
+        $db = $this->getConfig()->getDb();
 
         $migrate = new \Tk\Util\SqlMigrate($db);
         $migrate->setTempPath($config->getTempPath());
@@ -187,10 +190,11 @@ class Plugin extends \Tk\Plugin\Iface
      * Will only be called when deactivating the plugin in the
      * plugin control panel
      *
+     * @throws \Tk\Db\Exception
      */
     function doDeactivate()
     {
-        $db = \App\Factory::getDb();
+        $db = $this->getConfig()->getDb();
 
         // Clear the data table of all plugin data
         $sql = sprintf('DELETE FROM %s WHERE %s LIKE %s', $db->quoteParameter(\Tk\Db\Data::$DB_TABLE), $db->quoteParameter('fkey'),

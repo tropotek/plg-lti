@@ -18,7 +18,7 @@ class MenuHandler implements Subscriber
         if (!\Lti\Provider::isLti()) return;
 
         // Hide the staff/student course menu
-        /** @var \App\Controller\Iface $controller */
+        /** @var \Uni\Controller\Iface $controller */
         $controller = $event->get('controller');
         if(method_exists($controller, 'getPage')) {
             $page = $event->get('page');
@@ -37,7 +37,7 @@ class MenuHandler implements Subscriber
     {
         if (!\Lti\Provider::isLti()) return;
 
-//        /** @var \App\Controller\Iface $controller */
+//        /** @var \Uni\Controller\Iface $controller */
 //        $controller = $event->getController();
 //        if(method_exists($controller, 'getPage')) {
 //            $page = $controller->getPage();

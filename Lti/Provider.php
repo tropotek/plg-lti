@@ -53,7 +53,7 @@ class Provider extends ToolProvider\ToolProvider
      */
     public static function getLtiSession()
     {
-        return \App\Factory::getSession()->get(self::LTI_LAUNCH);
+        return \Uni\Config::getInstance()->getSession()->get(self::LTI_LAUNCH);
     }
 
     /**
@@ -63,7 +63,7 @@ class Provider extends ToolProvider\ToolProvider
      */
     public static function isLti()
     {
-        return \App\Factory::getSession()->has(self::LTI_LAUNCH);
+        return \Uni\Config::getInstance()->getSession()->has(self::LTI_LAUNCH);
     }
 
     /**
@@ -225,7 +225,7 @@ class Provider extends ToolProvider\ToolProvider
                     'dateStart' => \Tk\Date::create(),
                     'dateEnd' => \Tk\Date::create()->add(new \DateInterval('P1Y')),
                     'active' => true,
-                    'user' => $user,
+                    'UserIface' => $user,
                     'lti' => $ltiSesh
                 );
                 $course = Plugin::getPluginApi()->createCourse($params);
@@ -239,9 +239,9 @@ class Provider extends ToolProvider\ToolProvider
             $authResult = Plugin::getPluginApi()->autoAuthenticate($user);
             // fire loginSuccess....
             if ($this->dispatcher) {    // This event should redirect the user to their homepage.
-                $event = new \Tk\Event\AuthEvent(\App\Factory::getAuth(), $ltiSesh);
+                $event = new \Tk\Event\AuthEvent(\Uni\Config::getInstance()->getAuth(), $ltiSesh);
                 $event->setResult($authResult);
-                $event->set('user', $user);
+                $event->set('UserIface', $user);
                 $event->set('course', $course);
                 $event->set('isLti', true);
                 $this->dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $event);

@@ -34,8 +34,8 @@ class AuthHandler implements Subscriber
         if ($event->get('isLti') === true) {
             //$event->setRedirect(Plugin::getPluginApi()->getLtiHome($event->get('user'), $event->get('course')));
             $event->setRedirect(null);
-            \App\Factory::getSession()->set('auth.password.access', false);
-            Plugin::getPluginApi()->getLtiHome($event->get('user'), $event->get('course'))->redirect();
+            \App\Config::getInstance()->getSession()->set('auth.password.access', false);
+            Plugin::getPluginApi()->getLtiHome($event->get('UserIface'), $event->get('course'))->redirect();
         }
     }
 

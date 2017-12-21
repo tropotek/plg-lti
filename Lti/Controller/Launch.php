@@ -3,7 +3,7 @@ namespace Lti\Controller;
 
 use Tk\Request;
 use Dom\Template;
-use App\Controller\Iface;
+use Uni\Controller\Iface;
 use Lti\Plugin;
 
 /**
