@@ -201,8 +201,10 @@ class Provider extends ToolProvider\ToolProvider
             if (!empty($ltiSesh[self::LTI_COURSE_ID])) {     // Force course selection via passed param in the LTI launch url:  {launchUrl}?lti_courseId=3
                 /** @var \App\Db\Course $course */
                 $course = Plugin::getPluginApi()->findCourse($ltiSesh[self::LTI_COURSE_ID]);
-                if ($course->institutionId != $this->institution->getId()) {
-                    $course = null;
+                if ($course) {
+                    if ($course->institutionId != $this->institution->getId()) {
+                        $course = null;
+                    }
                 }
             } else {
                 $course = Plugin::getPluginApi()->findCourseByCode($courseCode, $this->institution->getId());
@@ -210,8 +212,14 @@ class Provider extends ToolProvider\ToolProvider
                     $ltiSesh[self::LTI_COURSE_ID] = $course->getId();
                 }
             }
+
+            if ($course) {
+                \Uni\Config::getInstance()->getSession()->set('lti.courseId', $course->getId());
+            }
+
+
             \Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiSesh);
-            vd($ltiSesh);
+vd($ltiSesh);
 
             if (!$course) {
                 if (!$this->user->isStaff()) throw new \Tk\Exception('Course not available, Please contact course coordinator.');
