@@ -83,10 +83,9 @@ class InstitutionSettings extends Iface
     }
 
     /**
-     * doSubmit()
-     *
-     * @param Form $form
+     * @param \Tk\Form $form
      * @throws \Tk\Db\Exception
+     * @throws \Tk\Exception
      */
     public function doSubmit($form)
     {
@@ -100,11 +99,13 @@ class InstitutionSettings extends Iface
             if (!$form->getFieldValue(Plugin::LTI_KEY)) {
                 $form->addFieldError(Plugin::LTI_KEY, 'Please enter a LTI Key');
             }
-            if (!$form->getFieldValue(Plugin::LTI_SECRET) && $lid > 0) {
-                $form->addFieldError(Plugin::LTI_SECRET, 'Please enter a LTI secret code');
-            }
             if (Plugin::ltiKeyExists($form->getFieldValue(Plugin::LTI_KEY), $lid)) {
                 $form->addFieldError(Plugin::LTI_KEY, 'This LTI key already exists for another Institution.');
+            }
+
+            if (!$form->getFieldValue(Plugin::LTI_SECRET) && $lid > 0) {
+                //$form->addFieldError(Plugin::LTI_SECRET, 'Please enter a LTI secret code');
+                $form->setFieldValue(Plugin::LTI_SECRET, hash('md5', time()));
             }
         }
 
