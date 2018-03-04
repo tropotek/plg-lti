@@ -39,7 +39,7 @@ class InstitutionSettings extends Iface
      */
     public function __construct()
     {
-        $this->setPageTitle('LDAP Plugin - Institution Settings');
+        $this->setPageTitle('LTI Plugin - Institution Settings');
 
     }
 
