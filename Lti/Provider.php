@@ -142,6 +142,7 @@ class Provider extends ToolProvider\ToolProvider
                 throw new \Tk\Exception('User email not found! Cannot log in.');
             }
             $ltiSesh = array_merge($_GET, $_POST);
+            \Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiSesh);
 
             // Try to locate an existing user...
             $user = Plugin::getPluginApi()->findUser($this->user->email, $this->institution->getId());
@@ -192,12 +193,9 @@ class Provider extends ToolProvider\ToolProvider
             $courseCode = preg_replace('/[^a-z0-9_-]/i', '_', $ltiSesh['context_label']);
             $course = null;
 
-
             if (!empty($ltiSesh['courseId']) && empty($ltiSesh[self::LTI_COURSE_ID])) {
-                $ltiSesh[self::LTI_COURSE_ID] = $ltiSesh['courseId'];
+                $ltiSesh[self::LTI_COURSE_ID] = (int)$ltiSesh['courseId'];
             }
-
-
             if (!empty($ltiSesh[self::LTI_COURSE_ID])) {     // Force course selection via passed param in the LTI launch url:  {launchUrl}?lti_courseId=3
                 /** @var \App\Db\Course $course */
                 $course = Plugin::getPluginApi()->findCourse($ltiSesh[self::LTI_COURSE_ID]);
@@ -208,18 +206,7 @@ class Provider extends ToolProvider\ToolProvider
                 }
             } else {
                 $course = Plugin::getPluginApi()->findCourseByCode($courseCode, $this->institution->getId());
-                if ($course) {
-                    $ltiSesh[self::LTI_COURSE_ID] = $course->getId();
-                }
             }
-
-            if ($course) {
-                \Uni\Config::getInstance()->getSession()->set('lti.courseId', $course->getId());
-            }
-
-
-            \Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiSesh);
-vd($ltiSesh);
 
             if (!$course) {
                 if (!$this->user->isStaff()) throw new \Tk\Exception('Course not available, Please contact course coordinator.');
@@ -238,6 +225,9 @@ vd($ltiSesh);
                 );
                 $course = Plugin::getPluginApi()->createCourse($params);
             }
+
+            $ltiSesh[self::LTI_COURSE_ID] = $course->getId();
+            \Uni\Config::getInstance()->getSession()->set('lti.courseId', $course->getId());
             // Check if user is enrolled in course if not do so.
             Plugin::getPluginApi()->addUserToCourse($course, $user);
 
