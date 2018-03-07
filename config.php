@@ -9,6 +9,7 @@ $config = \Tk\Config::getInstance();
 
 /** @var \Tk\Routing\RouteCollection $routes */
 $routes = $config['site.routes'];
+if (!$routes) return;
 
 $params = array();
 
