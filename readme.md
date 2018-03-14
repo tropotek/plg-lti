@@ -1,6 +1,6 @@
 # EMS III LTI Plugin
 
-__Project:__ [ttek-plg/lti](http://packagist.org/packages/ttek-plg/lti)  
+__Project:__ [ttek-plg/plg-lti](http://packagist.org/packages/ttek-plg/plg-lti)  
 __Published:__ 01 Sep 2016
 __Web:__ <http://www.tropotek.com/>  
 __Authors:__ Michael Mifsud <http://www.tropotek.com/>  
@@ -15,18 +15,18 @@ An lti Plugin for the new EMS III System. Use this to create your own plugins.
 
 ## Installation
 
-Available on Packagist ([ttek-plg/lti](http://packagist.org/packages/ttek-plg/lti))
+Available on Packagist ([ttek-plg/plg-lti](http://packagist.org/packages/ttek-plg/lti))
 and as such installable via [Composer](http://getcomposer.org/).
 
 ```bash
-# composer require ttek-plg/lti
+# composer require ttek-plg/plg-lti
 ```
 
 Or add the following to your composer.json file:
 
 ```json
 {
-  "ttek-plg/lti": "~1.0"
+  "ttek-plg/plg-lti": "~1.0"
 }
 ```
 

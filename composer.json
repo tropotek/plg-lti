@@ -1,7 +1,7 @@
 {
-    "name": "ttek-plg/ems-lti",
+    "name": "ttek-plg/plg-lti",
     "type": "ttek-plugin",
-    "description": "LTI Plugin for the EMS III",
+    "description": "LTI Plugin for the tk-uni libs",
     "keywords":  [
         "tropotek",
         "plugin",
@@ -26,10 +26,12 @@
     },
     "extra":  {
         "branch-alias":  {
-            "dev-master": "1.0.x-dev"
+            "dev-master": "2.0.x-dev"
         }
     },
     "require":  {
+        "ttek/tk-framework": "~2.0",
+        "ttek/tk-uni": "~2.0",
         "ttek/tk-installers": "~2.0",
         "imsglobal/lti": "~3.0"
     }
