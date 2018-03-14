@@ -56,7 +56,7 @@ class Plugin extends \Tk\Plugin\Iface
      */
     public static function getInstance()
     {
-        return \Tk\Config::getInstance()->getPluginFactory()->getPlugin('ems-lti');
+        return \Tk\Config::getInstance()->getPluginFactory()->getPlugin('plg-lti');
     }
 
     /**
