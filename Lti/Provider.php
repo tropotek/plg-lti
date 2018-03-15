@@ -14,12 +14,12 @@ use Tk\Event\Dispatcher;
 class Provider extends ToolProvider\ToolProvider
 {
     const LTI_LAUNCH = 'lti_launch';
-    const LTI_COURSE_ID = 'custom_courseid';
+    const LTI_SUBJECT_ID = 'custom_subjectid';
 
     /**
-     * @var \App\Db\Course
+     * @var \App\Db\Subject
      */
-    protected static $course = null;
+    protected static $subject = null;
 
     /**
      * @var Institution
@@ -67,17 +67,17 @@ class Provider extends ToolProvider\ToolProvider
     }
 
     /**
-     * Get the LTi session course
+     * Get the LTi session
      *
-     * @return \App\Db\Course|\Tk\Db\Map\Model
+     * @return \App\Db\Subject|\Tk\Db\Map\Model
      */
-    public static function getLtiCourse()
+    public static function getLtiSubject()
     {
-        if (!self::$course) {
+        if (!self::$subject) {
             $ltiSes = self::getLtiSession();
-            self::$course = Plugin::getPluginApi()->findCourse($ltiSes[self::LTI_COURSE_ID]);
+            self::$subject = Plugin::getPluginApi()->findSubject($ltiSes[self::LTI_SUBJECT_ID]);
         }
-        return self::$course;
+        return self::$subject;
     }
 
     /**
@@ -87,7 +87,7 @@ class Provider extends ToolProvider\ToolProvider
      */
     public static function getLtiInstitution()
     {
-        return self::getLtiCourse()->getInstitution();
+        return self::getLtiSubject()->getInstitution();
     }
 
     /**
@@ -186,35 +186,35 @@ class Provider extends ToolProvider\ToolProvider
                 throw new \Tk\Exception('User has no permission to access this resource. Contact your administrator.');
             }
 
-            // Add user to course if found.
-            if (empty($ltiSesh['context_label'])) throw new \Tk\Exception('Course not available, Please contact LMS administrator.');
+            // Add user to subject if found.
+            if (empty($ltiSesh['context_label'])) throw new \Tk\Exception('Subject not available, Please contact LMS administrator.');
 
 
-            $courseCode = preg_replace('/[^a-z0-9_-]/i', '_', $ltiSesh['context_label']);
-            $course = null;
+            $subjectCode = preg_replace('/[^a-z0-9_-]/i', '_', $ltiSesh['context_label']);
+            $subject = null;
 
-            if (!empty($ltiSesh['courseId']) && empty($ltiSesh[self::LTI_COURSE_ID])) {
-                $ltiSesh[self::LTI_COURSE_ID] = (int)$ltiSesh['courseId'];
+            if (!empty($ltiSesh['subjectId']) && empty($ltiSesh[self::LTI_SUBJECT_ID])) {
+                $ltiSesh[self::LTI_SUBJECT_ID] = (int)$ltiSesh['subjectId'];
             }
-            if (!empty($ltiSesh[self::LTI_COURSE_ID])) {     // Force course selection via passed param in the LTI launch url:  {launchUrl}?lti_courseId=3
-                /** @var \App\Db\Course $course */
-                $course = Plugin::getPluginApi()->findCourse($ltiSesh[self::LTI_COURSE_ID]);
-                if ($course) {
-                    if ($course->institutionId != $this->institution->getId()) {
-                        $course = null;
+            if (!empty($ltiSesh[self::LTI_SUBJECT_ID])) {     // Force subject selection via passed param in the LTI launch url:  {launchUrl}?lti_subjectId=3
+                /** @var \App\Db\Subject $subject */
+                $subject = Plugin::getPluginApi()->findSubject($ltiSesh[self::LTI_SUBJECT_ID]);
+                if ($subject) {
+                    if ($subject->institutionId != $this->institution->getId()) {
+                        $subject = null;
                     }
                 }
             } else {
-                $course = Plugin::getPluginApi()->findCourseByCode($courseCode, $this->institution->getId());
+                $subject = Plugin::getPluginApi()->findSubjectByCode($subjectCode, $this->institution->getId());
             }
 
-            if (!$course) {
-                if (!$this->user->isStaff()) throw new \Tk\Exception('Course not available, Please contact course coordinator.');
+            if (!$subject) {
+                if (!$this->user->isStaff()) throw new \Tk\Exception('Subject not available, Please contact subject coordinator.');
                 $params = array(
                     'type' => 'lti',
                     'institutionId' => $this->institution->getId(),
                     'name' => $ltiSesh['context_title'],
-                    'code' => $courseCode,
+                    'code' => $subjectCode,
                     'email' => empty($ltiSesh['lis_person_contact_email_primary']) ? $ltiSesh['lis_person_contact_email_primary'] : \Tk\Config::getInstance()->get('site.email'),
                     'description' => '',
                     'dateStart' => \Tk\Date::create(),
@@ -223,13 +223,13 @@ class Provider extends ToolProvider\ToolProvider
                     'UserIface' => $user,
                     'lti' => $ltiSesh
                 );
-                $course = Plugin::getPluginApi()->createCourse($params);
+                $subject = Plugin::getPluginApi()->createSubject($params);
             }
 
-            $ltiSesh[self::LTI_COURSE_ID] = $course->getId();
-            \Uni\Config::getInstance()->getSession()->set('lti.courseId', $course->getId());
-            // Check if user is enrolled in course if not do so.
-            Plugin::getPluginApi()->addUserToCourse($course, $user);
+            $ltiSesh[self::LTI_SUBJECT_ID] = $subject->getId();
+            \Uni\Config::getInstance()->getSession()->set('lti.subjectId', $subject->getId());
+            // Check if user is enrolled in subject if not do so.
+            Plugin::getPluginApi()->addUserToSubject($subject, $user);
 
 
 
@@ -240,7 +240,7 @@ class Provider extends ToolProvider\ToolProvider
                 $event = new \Tk\Event\AuthEvent(\Uni\Config::getInstance()->getAuth(), $ltiSesh);
                 $event->setResult($authResult);
                 $event->set('UserIface', $user);
-                $event->set('course', $course);
+                $event->set('subject', $subject);
                 $event->set('isLti', true);
                 $this->dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $event);
                 if ($event->getRedirect())
@@ -295,7 +295,7 @@ class Provider extends ToolProvider\ToolProvider
 Array[34]
 (
   [tool_consumer_info_product_family_code] => Blackboard Learn
-  [resource_link_title] => EMS III [Current Course]
+  [resource_link_title] => EMS III [Current Subject]
   [context_title] => VOCE Vet Science LTI test
   [roles] => urn:lti:role:ims/lis/Instructor            // TODO: Find out what a Lecture permission looks like.
   [lis_person_name_family] => Mifsud
@@ -305,7 +305,7 @@ Array[34]
   [oauth_signature_method] => HMAC-SHA1
   [oauth_version] => 1.0
   [custom_caliper_profile_url] => https://CASSANDRA.lms.unimelb.edu.au/learn/api/v1/telemetry/caliper/profile/_189167_1
-  [launch_presentation_return_url] => https://sandpit.lms.unimelb.edu.au/webapps/blackboard/execute/blti/launchReturn?course_id=_2051_1&content_id=_189167_1&toGC=false&launch_time=1488412989529&launch_id=43cac7ac-1ee0-45ac-853d-aaa638da9d30&link_id=_189167_1
+  [launch_presentation_return_url] => https://sandpit.lms.unimelb.edu.au/webapps/blackboard/execute/blti/launchReturn?subject_id=_2051_1&content_id=_189167_1&toGC=false&launch_time=1488412989529&launch_id=43cac7ac-1ee0-45ac-853d-aaa638da9d30&link_id=_189167_1
   [ext_launch_id] => 43cac7ac-1ee0-45ac-853d-aaa638da9d30
   [ext_lms] => bb-3000.1.3-rel.70+214db31
   [lti_version] => LTI-1p0

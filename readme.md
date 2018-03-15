@@ -57,7 +57,7 @@ to load the classes.
   [oauth_signature_method] => HMAC-SHA1
   [oauth_version] => 1.0
   [custom_caliper_profile_url] => https://unimelb.edu.au/learn/api/v1/telemetry/caliper/profile/_75691_1
-  [launch_presentation_return_url] => https://unimelb.edu.au/webapps/blackboard/execute/blti/launchReturn?course_id=_2051_1&content_id=_75691_1&toGC=false&launch_time=10000020541026&launch_id=b98984d5-1079-45d0-853c-71ce76643197&link_id=_75691_1
+  [launch_presentation_return_url] => https://unimelb.edu.au/webapps/blackboard/execute/blti/launchReturn?subject_id=_2051_1&content_id=_75691_1&toGC=false&launch_time=10000020541026&launch_id=b98984d5-1079-45d0-853c-71ce76643197&link_id=_75691_1
   [ext_launch_id] => b993834d5-1079-45d0-853c-71ce76643197
   [resource_link_description] => Test the New VOCE II site.
 Now named PeerReView for public consumption. ;-)
@@ -86,6 +86,6 @@ Also view the public part of the site that can be marketed to other Institutions
   [context_label] => VOCE10001_2014_SM5
   [launch_presentation_document_target] => window
   [ext_launch_presentation_css_url] => https://unimelb.edu.au/common/shared.css,https://unimelb.edu.au/branding/themes/unimelb-201410-08/theme.css,https://unimelb.edu.au/branding/colorpalettes/unimelb-201404.08/generated/colorpalette.generated.modern.css
-  [lti_courseId] => 1
+  [lti_subjectId] => 1
 
 )

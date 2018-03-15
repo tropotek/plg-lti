@@ -17,7 +17,7 @@ class MenuHandler implements Subscriber
     {
         if (!\Lti\Provider::isLti()) return;
 
-        // Hide the staff/student course menu
+        // Hide the staff/student subject menu
         /** @var \Uni\Controller\Iface $controller */
         $controller = $event->get('controller');
         if(method_exists($controller, 'getPage')) {
@@ -27,7 +27,7 @@ class MenuHandler implements Subscriber
 //            $nav = $page->getNavbar();
 //            //if ($nav instanceof \App\Ui\Navbar\StaffMenu || $nav instanceof \App\Ui\Navbar\StudentMenu) {
 //            if ($nav instanceof \App\Ui\Navbar\StudentMenu) {
-//                $nav->showCourseDropdown(false);
+//                $nav->showSubjectDropdown(false);
 //            }
         }
 
@@ -44,7 +44,7 @@ class MenuHandler implements Subscriber
 //            $nav = $page->getNavbar();
 //            vd($nav);
 //            if ($nav instanceof \App\Ui\Navbar\StaffMenu) {
-//                $nav->showCourseDropdown(false);
+//                $nav->showSubjectDropdown(false);
 //            }
 //        }
 
