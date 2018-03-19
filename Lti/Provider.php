@@ -50,6 +50,7 @@ class Provider extends ToolProvider\ToolProvider
      * Get the LTI session data array
      *
      * @return array
+     * @throws \Tk\Exception
      */
     public static function getLtiSession()
     {
@@ -60,6 +61,7 @@ class Provider extends ToolProvider\ToolProvider
      * Is the user currently in an LTI session
      *
      * @return boolean
+     * @throws \Tk\Exception
      */
     public static function isLti()
     {
@@ -70,6 +72,8 @@ class Provider extends ToolProvider\ToolProvider
      * Get the LTi session
      *
      * @return \App\Db\Subject|\Tk\Db\Map\Model
+     * @throws \Tk\Db\Exception
+     * @throws \Tk\Exception
      */
     public static function getLtiSubject()
     {
@@ -84,6 +88,8 @@ class Provider extends ToolProvider\ToolProvider
      * Get the LTi session institution
      *
      * @return Institution|\Tk\Db\Map\Model
+     * @throws \Tk\Db\Exception
+     * @throws \Tk\Exception
      */
     public static function getLtiInstitution()
     {
@@ -282,7 +288,7 @@ class Provider extends ToolProvider\ToolProvider
      * property for the cause of the error.
      * Return TRUE if the error was fully handled by this method.
      *
-     * @return null|bool
+     * @return void
      */
     function onError()
     {

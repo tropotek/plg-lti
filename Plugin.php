@@ -82,6 +82,7 @@ class Plugin extends \Tk\Plugin\Iface
     /**
      * @param \App\Db\Institution $institution
      * @return \Tk\Db\Data
+     * @throws \Tk\Db\Exception
      */
     public static function getInstitutionData($institution)
     {
@@ -92,6 +93,7 @@ class Plugin extends \Tk\Plugin\Iface
     /**
      * @param \App\Db\Institution $institution
      * @return \IMSGlobal\LTI\ToolProvider\ToolConsumer
+     * @throws \Tk\Db\Exception
      */
     public static function getLtiConsumer($institution)
     {
@@ -109,6 +111,7 @@ class Plugin extends \Tk\Plugin\Iface
      * Check if the LTI key exists
      *
      * @param $consumer_key256
+     * @param int $ignoreId
      * @return bool
      * @throws \Tk\Db\Exception
      */
@@ -127,6 +130,7 @@ class Plugin extends \Tk\Plugin\Iface
      *
      * @param \App\Db\Institution $institution
      * @return bool
+     * @throws \Tk\Db\Exception
      */
     public static function isEnabled($institution)
     {
@@ -218,6 +222,7 @@ class Plugin extends \Tk\Plugin\Iface
     /**
      * Get the settings URL, if null then there is none
      *
+     * @param $zoneName
      * @return string|\Tk\Uri|null
      */
     public function getZoneSettingsUrl($zoneName)

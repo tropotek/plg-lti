@@ -24,6 +24,8 @@ class Launch extends Iface
 
     /**
      * @param Request $request
+     * @throws \Dom\Exception
+     * @throws \Tk\Db\Exception
      */
     public function doLaunch(Request $request)
     {
@@ -38,6 +40,7 @@ class Launch extends Iface
      * @param $instHash
      * @return \Dom\Template|Template|string
      * @throws \Dom\Exception
+     * @throws \Tk\Db\Exception
      */
     public function doInsLaunch(Request $request, $instHash)
     {
