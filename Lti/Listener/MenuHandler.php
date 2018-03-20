@@ -7,7 +7,7 @@ use Tk\Event\Subscriber;
  * Class StartupHandler
  *
  * @author Michael Mifsud <info@tropotek.com>
- * @link http://www.tropotek.com/
+ * @see http://www.tropotek.com/
  * @license Copyright 2015 Michael Mifsud
  */
 class MenuHandler implements Subscriber
