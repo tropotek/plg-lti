@@ -5,8 +5,6 @@ use Tk\Event\Dispatcher;
 
 
 /**
- * Class Plugin
- *
  * @author Michael Mifsud <info@tropotek.com>
  * @see http://www.tropotek.com/
  * @license Copyright 2016 Michael Mifsud
@@ -48,23 +46,23 @@ class Plugin extends \Tk\Plugin\Iface
     public static $institutionData = null;
 
 
-
     /**
      * A helper method to get the Plugin instance globally
      *
-     * @return static
+     * @return Plugin|\Tk\Plugin\Iface
+     * @throws \Tk\Exception
      */
     public static function getInstance()
     {
-        return \Tk\Config::getInstance()->getPluginFactory()->getPlugin('plg-lti');
+        return \App\Config::getInstance()->getPluginFactory()->getPlugin('plg-lti');
     }
 
     /**
-     * @return \App\PluginApi
+     * @return \App\PluginApi|\Uni\PluginApi
      */
     public static function getPluginApi()
     {
-        return \Tk\Config::getInstance()->getPluginApi();
+        return \Uni\Config::getInstance()->getPluginApi();
     }
 
     /**
@@ -83,6 +81,7 @@ class Plugin extends \Tk\Plugin\Iface
      * @param \App\Db\Institution $institution
      * @return \Tk\Db\Data
      * @throws \Tk\Db\Exception
+     * @throws \Tk\Exception
      */
     public static function getInstitutionData($institution)
     {
@@ -94,6 +93,7 @@ class Plugin extends \Tk\Plugin\Iface
      * @param \App\Db\Institution $institution
      * @return \IMSGlobal\LTI\ToolProvider\ToolConsumer
      * @throws \Tk\Db\Exception
+     * @throws \Tk\Exception
      */
     public static function getLtiConsumer($institution)
     {
