@@ -128,9 +128,10 @@ class Plugin extends \Tk\Plugin\Iface
     /**
      * Return true if the plugin is enabled for this institution
      *
-     * @param \App\Db\Institution $institution
+     * @param \Uni\Db\InstitutionIface $institution
      * @return bool
      * @throws \Tk\Db\Exception
+     * @throws \Tk\Exception
      */
     public static function isEnabled($institution)
     {
@@ -156,6 +157,7 @@ class Plugin extends \Tk\Plugin\Iface
      * This is called when the session first registers the plugin to the queue
      * So it is the first called method after the constructor.....
      *
+     * @throws \Tk\Exception
      */
     function doInit()
     {
@@ -183,10 +185,11 @@ class Plugin extends \Tk\Plugin\Iface
         $config = \Tk\Config::getInstance();
         $db = $this->getConfig()->getDb();
 
-        $migrate = new \Tk\Util\SqlMigrate($db);
-        $migrate->setTempPath($config->getTempPath());
-        $migrate->migrate(dirname(__FILE__) . '/sql');
-
+        if (!$db->hasTable('_lti2_consumer')) {
+            $migrate = new \Tk\Util\SqlMigrate($db);
+            $migrate->setTempPath($config->getTempPath());
+            $migrate->migrate(dirname(__FILE__) . '/sql');
+        }
     }
 
     /**

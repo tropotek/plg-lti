@@ -77,7 +77,7 @@ class Provider extends ToolProvider\ToolProvider
      */
     public static function getLtiSubject()
     {
-        if (!self::$subject) {
+        if (!self::$subject && isset($ltiSes[self::LTI_SUBJECT_ID])) {
             $ltiSes = self::getLtiSession();
             self::$subject = Plugin::getPluginApi()->findSubject($ltiSes[self::LTI_SUBJECT_ID]);
         }
