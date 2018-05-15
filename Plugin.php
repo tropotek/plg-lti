@@ -12,18 +12,18 @@ use Tk\Event\Dispatcher;
 class Plugin extends \Tk\Plugin\Iface
 {
 
-    const ZONE_INSTITUTION = 'institution';
-    const ZONE_SUBJECT_PROFILE = 'profile';
-    const ZONE_SUBJECT = 'subject';
+    const ZONE_INSTITUTION      = 'institution';
+    const ZONE_SUBJECT_PROFILE  = 'profile';
+    const ZONE_SUBJECT          = 'subject';
 
     // Data labels
-    const LTI_STUFF = 'inst.lti.setting';
-    const LTI_ENABLE = 'inst.lti.enable';
-    const LTI_KEY = 'inst.lti.key';
-    const LTI_SECRET = 'inst.lti.secret';
-    const LTI_URL = 'inst.lti.url';
-    const LTI_CURRENT_KEY = 'inst.lti.currentKey';
-    const LTI_CURRENT_ID = 'inst.lti.currentId';
+    const LTI_STUFF         = 'inst.lti.setting';
+    const LTI_ENABLE        = 'inst.lti.enable';
+    const LTI_KEY           = 'inst.lti.key';
+    const LTI_SECRET        = 'inst.lti.secret';
+    const LTI_URL           = 'inst.lti.url';
+    const LTI_CURRENT_KEY   = 'inst.lti.currentKey';
+    const LTI_CURRENT_ID    = 'inst.lti.currentId';
 
     /**
      * @var string
@@ -141,7 +141,7 @@ class Plugin extends \Tk\Plugin\Iface
         }
         $data = self::getInstitutionData($institution);
         if ($data && $data->has(self::LTI_ENABLE)) {
-            return $data->get(self::LTI_ENABLE);
+            return true;
         }
 
         return false;
