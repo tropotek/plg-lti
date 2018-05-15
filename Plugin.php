@@ -17,13 +17,13 @@ class Plugin extends \Tk\Plugin\Iface
     const ZONE_SUBJECT          = 'subject';
 
     // Data labels
-    const LTI_STUFF         = 'inst.lti.setting';
-    const LTI_ENABLE        = 'inst.lti.enable';
-    const LTI_KEY           = 'inst.lti.key';
-    const LTI_SECRET        = 'inst.lti.secret';
-    const LTI_URL           = 'inst.lti.url';
-    const LTI_CURRENT_KEY   = 'inst.lti.currentKey';
-    const LTI_CURRENT_ID    = 'inst.lti.currentId';
+    const LTI_STUFF         = 'lti.setting';
+    const LTI_ENABLE        = 'lti.enable';
+    const LTI_KEY           = 'lti.key';
+    const LTI_SECRET        = 'lti.secret';
+    const LTI_URL           = 'lti.url';
+    const LTI_CURRENT_KEY   = 'lti.currentKey';
+    const LTI_CURRENT_ID    = 'lti.currentId';
 
     /**
      * @var string
