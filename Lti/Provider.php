@@ -226,7 +226,7 @@ class Provider extends ToolProvider\ToolProvider
                     'dateStart' => \Tk\Date::create(),
                     'dateEnd' => \Tk\Date::create()->add(new \DateInterval('P1Y')),
                     'active' => true,
-                    'UserIface' => $user,
+                    'user' => $user,
                     'lti' => $ltiSesh
                 );
                 $subject = Plugin::getPluginApi()->createSubject($params);
@@ -245,7 +245,7 @@ class Provider extends ToolProvider\ToolProvider
             if ($this->dispatcher) {    // This event should redirect the user to their homepage.
                 $event = new \Tk\Event\AuthEvent(\Uni\Config::getInstance()->getAuth(), $ltiSesh);
                 $event->setResult($authResult);
-                $event->set('UserIface', $user);
+                $event->set('user', $user);
                 $event->set('subject', $subject);
                 $event->set('isLti', true);
                 $this->dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $event);

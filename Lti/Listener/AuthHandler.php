@@ -35,7 +35,7 @@ class AuthHandler implements Subscriber
             //$event->setRedirect(Plugin::getPluginApi()->getLtiHome($event->get('user'), $event->get('subject')));
             $event->setRedirect(null);
             \App\Config::getInstance()->getSession()->set('auth.password.access', false);
-            Plugin::getPluginApi()->getLtiHome($event->get('UserIface'), $event->get('subject'))->redirect();
+            Plugin::getPluginApi()->getLtiHome($event->get('user'), $event->get('subject'))->redirect();
         }
     }
 
