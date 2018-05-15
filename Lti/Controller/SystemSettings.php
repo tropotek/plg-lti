@@ -28,9 +28,11 @@ class SystemSettings extends Iface
      */
     protected $data = null;
 
-    
+
     /**
-     *
+     * SystemSettings constructor.
+     * @throws \Tk\Db\Exception
+     * @throws \Tk\Exception
      */
     public function __construct()
     {
