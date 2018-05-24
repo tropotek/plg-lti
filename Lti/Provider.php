@@ -188,7 +188,7 @@ class Provider extends ToolProvider\ToolProvider
                 $user = Plugin::getPluginApi()->createUser($params);
             }
 
-            if (!$user->active || !$user->hasRole(array(\App\Db\UserGroup::ROLE_STAFF, \App\Db\UserGroup::ROLE_STUDENT))) {
+            if (!$user->active || !$user->hasRole(array(\Uni\Db\UserIface::ROLE_STAFF, \Uni\Db\UserIface::ROLE_STUDENT))) {
                 throw new \Tk\Exception('User has no permission to access this resource. Contact your administrator.');
             }
 
