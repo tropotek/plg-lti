@@ -26,6 +26,7 @@ class Launch extends Iface
      * @param Request $request
      * @throws \Dom\Exception
      * @throws \Tk\Db\Exception
+     * @throws \Tk\Exception
      */
     public function doLaunch(Request $request)
     {
@@ -41,6 +42,7 @@ class Launch extends Iface
      * @return \Dom\Template|Template|string
      * @throws \Dom\Exception
      * @throws \Tk\Db\Exception
+     * @throws \Tk\Exception
      */
     public function doInsLaunch(Request $request, $instHash)
     {
@@ -58,7 +60,7 @@ class Launch extends Iface
         $msg = '';
         if(Plugin::getInstance()->isActive()) {
             $provider = new \Lti\Provider(Plugin::getLtiDataConnector(), $this->institution, $this->getConfig()->getEventDispatcher());
-            $_POST['custom_tc_profile_url'] = '';   // Hack to speed up the launch as we do not need this url
+            $_POST['custom_tc_profile_url'] = '';   // Hack to speed up the launch process as we do not need this url
             $provider->handleRequest();
 
             if ($provider->message) {

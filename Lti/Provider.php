@@ -147,8 +147,20 @@ class Provider extends ToolProvider\ToolProvider
             if (!$this->user->email) {
                 throw new \Tk\Exception('User email not found! Cannot log in.');
             }
-            $ltiSesh = array_merge($_GET, $_POST);
-            \Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiSesh);
+
+            $ltiData = array_merge($_GET, $_POST);
+            \Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiData);
+
+
+            $adapter = new \Tk\Auth\Adapter\NullAuth();
+            $adapter->set('email', $this->user->email);
+            $adapter->set('institutionId', $this->institution->getId());
+            $adapter->set('ltiData', $ltiData);
+
+
+
+
+
 
             // Try to locate an existing user...
             $user = Plugin::getPluginApi()->findUser($this->user->email, $this->institution->getId());
@@ -183,7 +195,7 @@ class Provider extends ToolProvider\ToolProvider
                     'name' => $this->user->fullname,
                     'active' => true,
                     'uid' => '',
-                    'lti' => $ltiSesh
+                    'lti' => $ltiData
                 );
                 $user = Plugin::getPluginApi()->createUser($params);
             }
@@ -193,18 +205,18 @@ class Provider extends ToolProvider\ToolProvider
             }
 
             // Add user to subject if found.
-            if (empty($ltiSesh['context_label'])) throw new \Tk\Exception('Subject not available, Please contact LMS administrator.');
+            if (empty($ltiData['context_label'])) throw new \Tk\Exception('Subject not available, Please contact LMS administrator.');
 
 
-            $subjectCode = preg_replace('/[^a-z0-9_-]/i', '_', $ltiSesh['context_label']);
+            $subjectCode = preg_replace('/[^a-z0-9_-]/i', '_', $ltiData['context_label']);
             $subject = null;
 
-            if (!empty($ltiSesh['subjectId']) && empty($ltiSesh[self::LTI_SUBJECT_ID])) {
-                $ltiSesh[self::LTI_SUBJECT_ID] = (int)$ltiSesh['subjectId'];
+            if (!empty($ltiData['subjectId']) && empty($ltiData[self::LTI_SUBJECT_ID])) {
+                $ltiData[self::LTI_SUBJECT_ID] = (int)$ltiData['subjectId'];
             }
-            if (!empty($ltiSesh[self::LTI_SUBJECT_ID])) {     // Force subject selection via passed param in the LTI launch url:  {launchUrl}?lti_subjectId=3
+            if (!empty($ltiData[self::LTI_SUBJECT_ID])) {     // Force subject selection via passed param in the LTI launch url:  {launchUrl}?lti_subjectId=3
                 /** @var \App\Db\Subject $subject */
-                $subject = Plugin::getPluginApi()->findSubject($ltiSesh[self::LTI_SUBJECT_ID]);
+                $subject = Plugin::getPluginApi()->findSubject($ltiData[self::LTI_SUBJECT_ID]);
                 if ($subject) {
                     if ($subject->institutionId != $this->institution->getId()) {
                         $subject = null;
@@ -215,24 +227,29 @@ class Provider extends ToolProvider\ToolProvider
             }
 
             if (!$subject) {
-                if (!$this->user->isStaff()) throw new \Tk\Exception('Subject not available, Please contact subject coordinator.');
+                if (!$this->user->isStaff())
+                    throw new \Tk\Exception('Subject not available, Please contact subject coordinator.');
+
+
+
+
                 $params = array(
                     'type' => 'lti',
                     'institutionId' => $this->institution->getId(),
-                    'name' => $ltiSesh['context_title'],
+                    'name' => $ltiData['context_title'],
                     'code' => $subjectCode,
-                    'email' => empty($ltiSesh['lis_person_contact_email_primary']) ? $ltiSesh['lis_person_contact_email_primary'] : \Tk\Config::getInstance()->get('site.email'),
+                    'email' => empty($ltiData['lis_person_contact_email_primary']) ? $ltiData['lis_person_contact_email_primary'] : \Tk\Config::getInstance()->get('site.email'),
                     'description' => '',
                     'dateStart' => \Tk\Date::create(),
                     'dateEnd' => \Tk\Date::create()->add(new \DateInterval('P1Y')),
                     'active' => true,
                     'user' => $user,
-                    'lti' => $ltiSesh
+                    'lti' => $ltiData
                 );
                 $subject = Plugin::getPluginApi()->createSubject($params);
             }
 
-            $ltiSesh[self::LTI_SUBJECT_ID] = $subject->getId();
+            $ltiData[self::LTI_SUBJECT_ID] = $subject->getId();
             \Uni\Config::getInstance()->getSession()->set('lti.subjectId', $subject->getId());
             // Check if user is enrolled in subject if not do so.
             Plugin::getPluginApi()->addUserToSubject($subject, $user);
@@ -243,7 +260,7 @@ class Provider extends ToolProvider\ToolProvider
             $authResult = Plugin::getPluginApi()->autoAuthenticate($user);
             // fire loginSuccess....
             if ($this->dispatcher) {    // This event should redirect the user to their homepage.
-                $event = new \Tk\Event\AuthEvent($ltiSesh);
+                $event = new \Tk\Event\AuthEvent($ltiData);
                 $event->setResult($authResult);
                 $event->set('user', $user);
                 $event->set('subject', $subject);
@@ -252,6 +269,13 @@ class Provider extends ToolProvider\ToolProvider
                 if ($event->getRedirect())
                     $event->getRedirect()->redirect();
             }
+
+
+
+
+
+
+
             \Tk\Config::getInstance()->getLog()->warning('Remember to redirect to a valid LTI page.');
         } catch (\Exception $e) {
             $this->reason = $e->__toString();
