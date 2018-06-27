@@ -163,11 +163,27 @@ class Provider extends ToolProvider\ToolProvider
             $auth = $this->getConfig()->getAuth();
             $adapter = new \Lti\Auth\LtiAdapter($this->user, $this->institution);
             $adapter->set('ltiData', $ltiData);
-            $result = $auth->authenticate($adapter);
-            if (!$result->isValid()) {
-                // TODO:
+
+            $event = new \Tk\Event\AuthEvent();
+            $event->setAdapter($adapter);
+            $this->getConfig()->getEventDispatcher()->dispatch(\Tk\Auth\AuthEvents::LOGIN, $event);
+            $result = $event->getResult();
+
+            if (!$result || !$result->isValid()) {
+                if ($result) {
+                    throw new \Tk\Exception(implode("\n", $result->getMessages()));
+                }
                 throw new \Tk\Exception('Cannot connect to LTI interface, please contact your course coordinator.');
             }
+
+            // Copy the event to avoid propagation issues
+            $sEvent = new \Tk\Event\AuthEvent();
+            $sEvent->setResult($event->getResult());
+            $sEvent->setRedirect($event->getRedirect());
+            $sEvent->replace($event->all());
+            $this->getConfig()->getEventDispatcher()->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $sEvent);
+            if ($sEvent->getRedirect())
+                $sEvent->getRedirect()->redirect();
 
 
             return;

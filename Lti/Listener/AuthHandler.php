@@ -22,21 +22,19 @@ class AuthHandler implements Subscriber
      */
     public function onLoginProcess(\Tk\Event\AuthAdapterEvent $event)
     {
-        vd('Lti onLoginProcess');
         if ($event->getAdapter() instanceof \Lti\Auth\LtiAdapter) {
+            vd('Lti onLoginProcess');
             /** @var \Tk\Auth\Adapter\Ldap $adapter */
             $adapter = $event->getAdapter();
             $config = \App\Config::getInstance();
 
-            // Find user data from ldap connection
+            // Find/create user data from lti data
 
+            // Find/create subject data from lti data
 
             //$event->setResult(new \Tk\Auth\Result(\Tk\Auth\Result::SUCCESS, $user->getId()));
 
-
         }
-
-
     }
 
     /**
