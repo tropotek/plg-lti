@@ -15,6 +15,31 @@ class AuthHandler implements Subscriber
 {
 
     /**
+     * @param \Tk\Event\AuthAdapterEvent $event
+     * @return null|void
+     * @throws \Tk\Db\Exception
+     * @throws \Tk\Exception
+     */
+    public function onLoginProcess(\Tk\Event\AuthAdapterEvent $event)
+    {
+        vd('Lti onLoginProcess');
+        if ($event->getAdapter() instanceof \Lti\Auth\LtiAdapter) {
+            /** @var \Tk\Auth\Adapter\Ldap $adapter */
+            $adapter = $event->getAdapter();
+            $config = \App\Config::getInstance();
+
+            // Find user data from ldap connection
+
+
+            //$event->setResult(new \Tk\Auth\Result(\Tk\Auth\Result::SUCCESS, $user->getId()));
+
+
+        }
+
+
+    }
+
+    /**
      * @param AuthEvent $event
      * @throws \Exception
      */
@@ -22,6 +47,8 @@ class AuthHandler implements Subscriber
     {
         $result = null;
         $formData = $event->all();
+
+        vd('LTI onLogin');
 
         $institution = $this->getConfig()->getInstitution();
         if (!$institution) return;
@@ -34,6 +61,7 @@ class AuthHandler implements Subscriber
      */
     public function onLoginSuccess(AuthEvent $event)
     {
+        vd('LTI onLoginSuccess');
         if ($event->get('isLti') === true) {
             //$event->setRedirect(Plugin::getPluginApi()->getLtiHome($event->get('user'), $event->get('subject')));
             $event->setRedirect(null);
@@ -77,7 +105,8 @@ class AuthHandler implements Subscriber
     public static function getSubscribedEvents()
     {
         return array(
-            //AuthEvents::LOGIN => array('onLogin', 0),
+            AuthEvents::LOGIN => array('onLogin', 10),
+            AuthEvents::LOGIN_PROCESS => array('onLoginProcess', 10),
             AuthEvents::LOGIN_SUCCESS => array('onLoginSuccess', 0),
             AuthEvents::LOGOUT => array('onLogout', 10)
         );

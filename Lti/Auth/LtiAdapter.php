@@ -41,6 +41,7 @@ class LtiAdapter extends \Tk\Auth\Adapter\NullAuth
     public function __construct($ltiUser, $institution)
     {
         parent::__construct();
+        $this->set('username', $ltiUser->email);
         $this->ltiUser = $ltiUser;
         $this->institution = $institution;
     }
@@ -72,7 +73,6 @@ class LtiAdapter extends \Tk\Auth\Adapter\NullAuth
             return new Result(Result::FAILURE_CREDENTIAL_INVALID, $username, 'Invalid username or password.');
         }
         try {
-
             /** @var \Tk\Event\Dispatcher $dispatcher */
             $dispatcher = $this->getConfig()->getEventDispatcher();
             if ($dispatcher) {

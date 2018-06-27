@@ -166,23 +166,20 @@ class Provider extends ToolProvider\ToolProvider
             $result = $auth->authenticate($adapter);
             if (!$result->isValid()) {
                 // TODO:
+                throw new \Tk\Exception('Cannot connect to LTI interface, please contact your course coordinator.');
             }
 
-            // Add user to auth
-            //$authResult = Plugin::getPluginApi()->autoAuthenticate($user);
 
-            // fire loginSuccess....
-            if ($this->dispatcher) {    // This event should redirect the user to their homepage.
-                $event = new \Tk\Event\AuthEvent($ltiData);
-                $event->setResult($result);
-                $event->set('user', $adapter->getUser());
-                $event->set('subject', $adapter->getSubject());
-                $event->set('isLti', true);
-                $this->dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $event);
-                if ($event->getRedirect())
-                    $event->getRedirect()->redirect();
-            }
+            return;
 
+
+
+
+
+
+
+
+            // ------------------------------------------------------------------------------ //
 
 
 
@@ -276,19 +273,19 @@ class Provider extends ToolProvider\ToolProvider
 
 
 
-//            // Add user to auth
-//            $authResult = Plugin::getPluginApi()->autoAuthenticate($user);
-//            // fire loginSuccess....
-//            if ($this->dispatcher) {    // This event should redirect the user to their homepage.
-//                $event = new \Tk\Event\AuthEvent($ltiData);
-//                $event->setResult($authResult);
-//                $event->set('user', $user);
-//                $event->set('subject', $subject);
-//                $event->set('isLti', true);
-//                $this->dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $event);
-//                if ($event->getRedirect())
-//                    $event->getRedirect()->redirect();
-//            }
+            // Add user to auth
+            $authResult = Plugin::getPluginApi()->autoAuthenticate($user);
+            // fire loginSuccess....
+            if ($this->dispatcher) {    // This event should redirect the user to their homepage.
+                $event = new \Tk\Event\AuthEvent($ltiData);
+                $event->setResult($authResult);
+                $event->set('user', $user);
+                $event->set('subject', $subject);
+                $event->set('isLti', true);
+                $this->dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $event);
+                if ($event->getRedirect())
+                    $event->getRedirect()->redirect();
+            }
 
 
 
@@ -298,8 +295,11 @@ class Provider extends ToolProvider\ToolProvider
 
             \Tk\Config::getInstance()->getLog()->warning('Remember to redirect to a valid LTI page.');
         } catch (\Exception $e) {
-            $this->reason = $e->__toString();
             $this->message = $e->getMessage();  // This will be shown in the host app
+            $this->reason = '';
+            if ($this->getConfig()->isDebug()) {
+                $this->reason = $e->__toString();
+            }
             $this->ok = false;
             return;
         }
