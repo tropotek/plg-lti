@@ -113,6 +113,14 @@ class Provider extends ToolProvider\ToolProvider
     }
 
     /**
+     * @return \App\Config
+     */
+    public function getConfig()
+    {
+        return \App\Config::getInstance();
+    }
+
+    /**
      * Check whether the user has a specified role name.
      *
      * @param string $role Name of role
@@ -151,13 +159,29 @@ class Provider extends ToolProvider\ToolProvider
             $ltiData = array_merge($_GET, $_POST);
             \Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiData);
 
-
-            $adapter = new \Tk\Auth\Adapter\NullAuth();
-            $adapter->set('email', $this->user->email);
-            $adapter->set('institutionId', $this->institution->getId());
+            /** @var \Tk\Auth $auth */
+            $auth = $this->getConfig()->getAuth();
+            $adapter = new \Lti\Auth\LtiAdapter($this->user, $this->institution);
             $adapter->set('ltiData', $ltiData);
+            $result = $auth->authenticate($adapter);
+            if (!$result->isValid()) {
+                // TODO:
+            }
 
+            // Add user to auth
+            //$authResult = Plugin::getPluginApi()->autoAuthenticate($user);
 
+            // fire loginSuccess....
+            if ($this->dispatcher) {    // This event should redirect the user to their homepage.
+                $event = new \Tk\Event\AuthEvent($ltiData);
+                $event->setResult($result);
+                $event->set('user', $adapter->getUser());
+                $event->set('subject', $adapter->getSubject());
+                $event->set('isLti', true);
+                $this->dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $event);
+                if ($event->getRedirect())
+                    $event->getRedirect()->redirect();
+            }
 
 
 
@@ -229,10 +253,6 @@ class Provider extends ToolProvider\ToolProvider
             if (!$subject) {
                 if (!$this->user->isStaff())
                     throw new \Tk\Exception('Subject not available, Please contact subject coordinator.');
-
-
-
-
                 $params = array(
                     'type' => 'lti',
                     'institutionId' => $this->institution->getId(),
@@ -256,19 +276,19 @@ class Provider extends ToolProvider\ToolProvider
 
 
 
-            // Add user to auth
-            $authResult = Plugin::getPluginApi()->autoAuthenticate($user);
-            // fire loginSuccess....
-            if ($this->dispatcher) {    // This event should redirect the user to their homepage.
-                $event = new \Tk\Event\AuthEvent($ltiData);
-                $event->setResult($authResult);
-                $event->set('user', $user);
-                $event->set('subject', $subject);
-                $event->set('isLti', true);
-                $this->dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $event);
-                if ($event->getRedirect())
-                    $event->getRedirect()->redirect();
-            }
+//            // Add user to auth
+//            $authResult = Plugin::getPluginApi()->autoAuthenticate($user);
+//            // fire loginSuccess....
+//            if ($this->dispatcher) {    // This event should redirect the user to their homepage.
+//                $event = new \Tk\Event\AuthEvent($ltiData);
+//                $event->setResult($authResult);
+//                $event->set('user', $user);
+//                $event->set('subject', $subject);
+//                $event->set('isLti', true);
+//                $this->dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $event);
+//                if ($event->getRedirect())
+//                    $event->getRedirect()->redirect();
+//            }
 
 
 

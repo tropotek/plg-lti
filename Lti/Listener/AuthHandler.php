@@ -7,8 +7,6 @@ use Tk\Event\AuthEvent;
 use Tk\Auth\AuthEvents;
 
 /**
- * Class StartupHandler
- *
  * @author Michael Mifsud <info@tropotek.com>
  * @see http://www.tropotek.com/
  * @license Copyright 2015 Michael Mifsud
@@ -22,6 +20,11 @@ class AuthHandler implements Subscriber
      */
     public function onLogin(AuthEvent $event)
     {
+        $result = null;
+        $formData = $event->all();
+
+        $institution = $this->getConfig()->getInstitution();
+        if (!$institution) return;
 
     }
 
@@ -79,6 +82,13 @@ class AuthHandler implements Subscriber
             AuthEvents::LOGOUT => array('onLogout', 10)
         );
     }
-    
+
+    /**
+     * @return \App\Config
+     */
+    public function getConfig()
+    {
+        return \App\Config::getInstance();
+    }
     
 }
