@@ -243,7 +243,7 @@ class Provider extends ToolProvider\ToolProvider
             $authResult = Plugin::getPluginApi()->autoAuthenticate($user);
             // fire loginSuccess....
             if ($this->dispatcher) {    // This event should redirect the user to their homepage.
-                $event = new \Tk\Event\AuthEvent(\Uni\Config::getInstance()->getAuth(), $ltiSesh);
+                $event = new \Tk\Event\AuthEvent($ltiSesh);
                 $event->setResult($authResult);
                 $event->set('user', $user);
                 $event->set('subject', $subject);
