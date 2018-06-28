@@ -159,12 +159,9 @@ class Provider extends ToolProvider\ToolProvider
             $ltiData = array_merge($_GET, $_POST);
             \Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiData);
 
-            /** @var \Tk\Auth $auth */
-            $auth = $this->getConfig()->getAuth();
-            $adapter = new \Lti\Auth\LtiAdapter($this->user, $this->institution);
-            $adapter->set('ltiData', $ltiData);
-
             $event = new \Tk\Event\AuthEvent();
+            $event->set('ltiData', $ltiData);
+            $adapter = new \Lti\Auth\LtiAdapter($this->user, $this->institution);
             $event->setAdapter($adapter);
             $this->getConfig()->getEventDispatcher()->dispatch(\Tk\Auth\AuthEvents::LOGIN, $event);
             $result = $event->getResult();
@@ -178,136 +175,13 @@ class Provider extends ToolProvider\ToolProvider
 
             // Copy the event to avoid propagation issues
             $sEvent = new \Tk\Event\AuthEvent();
+            $sEvent->setAdapter($event->getAdapter());
             $sEvent->setResult($event->getResult());
             $sEvent->setRedirect($event->getRedirect());
             $sEvent->replace($event->all());
             $this->getConfig()->getEventDispatcher()->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $sEvent);
             if ($sEvent->getRedirect())
                 $sEvent->getRedirect()->redirect();
-
-
-            return;
-
-
-
-
-
-
-
-
-            // ------------------------------------------------------------------------------ //
-
-
-
-            // Try to locate an existing user...
-            $user = Plugin::getPluginApi()->findUser($this->user->email, $this->institution->getId());
-            //vd($user);
-            if (!$user) {
-                // Create new user
-                $role = 'student';
-                if ($this->user->isAdmin() || $this->user->isStaff()) {
-                    $role = 'staff';
-                }
-                list($username, $domain) = explode('@', $this->user->email);
-                // There is a possibility that the usernames clash so auto create a unique one.
-                $un = $username;
-                $i = 0;
-                $found = null;
-                do {
-                    $found = Plugin::getPluginApi()->findUser($un, $this->institution->getId());
-                    if (!$found) {
-                        $username = $un;
-                    }
-                    $un = $username.'_'.$i;
-                    $i++;
-                } while ($found);
-
-                $params = array(
-                    'type' => 'lti',
-                    'institutionId' => $this->institution->getId(),
-                    'username' => $username,
-                    'email' => $this->user->email,
-                    'role' => $role,
-                    'password' => '',
-                    'name' => $this->user->fullname,
-                    'active' => true,
-                    'uid' => '',
-                    'lti' => $ltiData
-                );
-                $user = Plugin::getPluginApi()->createUser($params);
-            }
-
-            if (!$user->active || !$user->hasRole(array(\Uni\Db\UserIface::ROLE_STAFF, \Uni\Db\UserIface::ROLE_STUDENT))) {
-                throw new \Tk\Exception('User has no permission to access this resource. Contact your administrator.');
-            }
-
-            // Add user to subject if found.
-            if (empty($ltiData['context_label'])) throw new \Tk\Exception('Subject not available, Please contact LMS administrator.');
-
-
-            $subjectCode = preg_replace('/[^a-z0-9_-]/i', '_', $ltiData['context_label']);
-            $subject = null;
-
-            if (!empty($ltiData['subjectId']) && empty($ltiData[self::LTI_SUBJECT_ID])) {
-                $ltiData[self::LTI_SUBJECT_ID] = (int)$ltiData['subjectId'];
-            }
-            if (!empty($ltiData[self::LTI_SUBJECT_ID])) {     // Force subject selection via passed param in the LTI launch url:  {launchUrl}?lti_subjectId=3
-                /** @var \App\Db\Subject $subject */
-                $subject = Plugin::getPluginApi()->findSubject($ltiData[self::LTI_SUBJECT_ID]);
-                if ($subject) {
-                    if ($subject->institutionId != $this->institution->getId()) {
-                        $subject = null;
-                    }
-                }
-            } else {
-                $subject = Plugin::getPluginApi()->findSubjectByCode($subjectCode, $this->institution->getId());
-            }
-
-            if (!$subject) {
-                if (!$this->user->isStaff())
-                    throw new \Tk\Exception('Subject not available, Please contact subject coordinator.');
-                $params = array(
-                    'type' => 'lti',
-                    'institutionId' => $this->institution->getId(),
-                    'name' => $ltiData['context_title'],
-                    'code' => $subjectCode,
-                    'email' => empty($ltiData['lis_person_contact_email_primary']) ? $ltiData['lis_person_contact_email_primary'] : \Tk\Config::getInstance()->get('site.email'),
-                    'description' => '',
-                    'dateStart' => \Tk\Date::create(),
-                    'dateEnd' => \Tk\Date::create()->add(new \DateInterval('P1Y')),
-                    'active' => true,
-                    'user' => $user,
-                    'lti' => $ltiData
-                );
-                $subject = Plugin::getPluginApi()->createSubject($params);
-            }
-
-            $ltiData[self::LTI_SUBJECT_ID] = $subject->getId();
-            \Uni\Config::getInstance()->getSession()->set('lti.subjectId', $subject->getId());
-            // Check if user is enrolled in subject if not do so.
-            Plugin::getPluginApi()->addUserToSubject($subject, $user);
-
-
-
-            // Add user to auth
-            $authResult = Plugin::getPluginApi()->autoAuthenticate($user);
-            // fire loginSuccess....
-            if ($this->dispatcher) {    // This event should redirect the user to their homepage.
-                $event = new \Tk\Event\AuthEvent($ltiData);
-                $event->setResult($authResult);
-                $event->set('user', $user);
-                $event->set('subject', $subject);
-                $event->set('isLti', true);
-                $this->dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $event);
-                if ($event->getRedirect())
-                    $event->getRedirect()->redirect();
-            }
-
-
-
-
-
-
 
             \Tk\Config::getInstance()->getLog()->warning('Remember to redirect to a valid LTI page.');
         } catch (\Exception $e) {

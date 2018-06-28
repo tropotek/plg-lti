@@ -1,6 +1,7 @@
 <?php
 namespace Lti\Auth;
 
+use Lti\Plugin;
 use Tk\Auth\Result;
 
 
@@ -63,6 +64,43 @@ class LtiAdapter extends \Tk\Auth\Adapter\NullAuth
     }
 
     /**
+     * @return null|\Uni\Db\UserIface
+     */
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    /**
+     * @param null|\Uni\Db\UserIface $user
+     * @return LtiAdapter
+     */
+    public function setUser($user)
+    {
+        $this->user = $user;
+        return $this;
+    }
+
+    /**
+     * @return null|\Uni\Db\SubjectIface
+     */
+    public function getSubject()
+    {
+        return $this->subject;
+    }
+
+    /**
+     * @param null|\Uni\Db\SubjectIface $subject
+     * @return LtiAdapter
+     */
+    public function setSubject($subject)
+    {
+        $this->subject = $subject;
+        return $this;
+    }
+
+
+    /**
      *
      * @return Result
      */
@@ -76,7 +114,7 @@ class LtiAdapter extends \Tk\Auth\Adapter\NullAuth
             /** @var \Tk\Event\Dispatcher $dispatcher */
             $dispatcher = $this->getConfig()->getEventDispatcher();
             if ($dispatcher) {
-                $event = new \Tk\Event\AuthAdapterEvent($this);
+                $event = new \Tk\Event\AuthEvent($this);
                 $dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_PROCESS, $event);
                 if ($event->getResult()) {
                     return $event->getResult();
