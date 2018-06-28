@@ -78,6 +78,10 @@ class AuthHandler implements Subscriber
      */
     public function onLogout(AuthEvent $event)
     {
+        // Clear the LTI session data
+        \Lti\Provider::clearLtiSession();
+
+
         // TODO: handle this redirect in the app if requred
 //        $ltiSess = \Lti\Provider::getLtiSession();
 //        if (\Lti\Provider::isLti() && !empty($ltiSess['launch_presentation_return_url'])) {

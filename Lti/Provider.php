@@ -50,30 +50,36 @@ class Provider extends ToolProvider\ToolProvider
      * Get the LTI session data array
      *
      * @return array
-     * @throws \Tk\Exception
      */
     public static function getLtiSession()
     {
-        return \Uni\Config::getInstance()->getSession()->get(self::LTI_LAUNCH);
+        return \Tk\Config::getInstance()->getSession()->get(self::LTI_LAUNCH);
+    }
+
+    /**
+     * Get the LTI session data array
+     *
+     * @return array
+     */
+    public static function clearLtiSession()
+    {
+        return \Tk\Config::getInstance()->getSession()->remove(self::LTI_LAUNCH);
     }
 
     /**
      * Is the user currently in an LTI session
      *
      * @return boolean
-     * @throws \Tk\Exception
      */
     public static function isLti()
     {
-        return \Uni\Config::getInstance()->getSession()->has(self::LTI_LAUNCH);
+        return \Tk\Config::getInstance()->getSession()->has(self::LTI_LAUNCH);
     }
 
     /**
      * Get the LTi session
      *
      * @return \App\Db\Subject|\Tk\Db\Map\Model
-     * @throws \Tk\Db\Exception
-     * @throws \Tk\Exception
      */
     public static function getLtiSubject()
     {
@@ -165,7 +171,7 @@ class Provider extends ToolProvider\ToolProvider
             $event = new \Tk\Event\AuthEvent($adapter);
             $this->getConfig()->getEventDispatcher()->dispatch(\Tk\Auth\AuthEvents::LOGIN, $event);
             $result = $event->getResult();
-vd($result);
+
             if (!$result || !$result->isValid()) {
                 if ($result) {
                     throw new \Tk\Exception(implode("\n", $result->getMessages()));
