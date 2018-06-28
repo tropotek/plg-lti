@@ -42,6 +42,7 @@ class AuthHandler implements Subscriber
             'active' => true
         );
         $adapter->set('userData', $userData);
+        vd();
 
         // Find a valid subject object if available
         if (empty($ltiData['context_label']))
@@ -111,25 +112,6 @@ class AuthHandler implements Subscriber
         );
     }
 
-
-    /**
-     * @param $username
-     * @param $institutionId
-     * @return string
-     */
-    private function makeUniqueUsername($username, $institutionId)
-    {
-        $i = 0;
-        $found = null;
-        do {
-            $i++;
-            $found = Plugin::getPluginApi()->findUser($username, $institutionId);
-            if ($found) {
-                $username = $username.'_'.$i;
-            }
-        } while (!$found);
-        return $username;
-    }
 
     /**
      * @return \App\Config
