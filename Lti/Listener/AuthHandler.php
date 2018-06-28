@@ -23,13 +23,18 @@ class AuthHandler implements Subscriber
     {
         /** @var \Lti\Auth\LtiAdapter $adapter */
         $adapter = $event->getAdapter();
+        if (!Plugin::isEnabled($adapter->getInstitution())) return;
+        vd('LTI onLogin');
+
         $ltiData = $adapter->get('ltiData');
+        if (!$ltiData) return;
 
         // Gather user details
         $role = 'student';
         if ($adapter->getLtiUser()->isAdmin() || $adapter->getLtiUser()->isStaff()) {
             $role = 'staff';
         }
+
         list($username, $domain) = explode('@', $adapter->getLtiUser()->email);
         $userData = array(
             'institutionId' => $adapter->getInstitution()->getId(),
@@ -73,10 +78,11 @@ class AuthHandler implements Subscriber
      */
     public function onLogout(AuthEvent $event)
     {
-        $ltiSess = \Lti\Provider::getLtiSession();
-        if (\Lti\Provider::isLti() && !empty($ltiSess['launch_presentation_return_url'])) {
-            $event->setRedirect(\Tk\Uri::create($ltiSess['launch_presentation_return_url']));
-        }
+        // TODO: handle this redirect in the app if requred
+//        $ltiSess = \Lti\Provider::getLtiSession();
+//        if (\Lti\Provider::isLti() && !empty($ltiSess['launch_presentation_return_url'])) {
+//            $event->setRedirect(\Tk\Uri::create($ltiSess['launch_presentation_return_url']));
+//        }
     }
 
 

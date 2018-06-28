@@ -162,11 +162,10 @@ class Provider extends ToolProvider\ToolProvider
             $adapter = new \Lti\Auth\LtiAdapter($this->user, $this->institution);
             $adapter->set('ltiData', $ltiData);
 
-            $event = new \Tk\Event\AuthEvent();
-            $event->setAdapter($adapter);
+            $event = new \Tk\Event\AuthEvent($adapter);
             $this->getConfig()->getEventDispatcher()->dispatch(\Tk\Auth\AuthEvents::LOGIN, $event);
             $result = $event->getResult();
-
+vd($result);
             if (!$result || !$result->isValid()) {
                 if ($result) {
                     throw new \Tk\Exception(implode("\n", $result->getMessages()));
@@ -175,7 +174,7 @@ class Provider extends ToolProvider\ToolProvider
             }
 
             // Copy the event to avoid propagation issues
-            $sEvent = new \Tk\Event\AuthEvent($event->getAdapter());
+            $sEvent = new \Tk\Event\AuthEvent($adapter);
             $sEvent->replace($event->all());
             $sEvent->setResult($event->getResult());
             $sEvent->setRedirect($event->getRedirect());

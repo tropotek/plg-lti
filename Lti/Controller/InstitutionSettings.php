@@ -59,19 +59,19 @@ class InstitutionSettings extends Iface
         $this->form = \Uni\Config::createForm('formEdit');
         $this->form->setRenderer(\Uni\Config::createFormRenderer($this->form));
 
-        $this->form->addField(new Field\Checkbox(Plugin::LTI_ENABLE))->addCss('tk-input-toggle')->setLabel('Enable LTI')->
-            setTabGroup('LTI')->setNotes('Enable the LTI launch URL for LMS systems.');
+        $this->form->addField(new Field\Checkbox(Plugin::LTI_ENABLE))->addCss('tk-input-toggle')->setLabel('Enable LTI')
+            ->setTabGroup('LTI')->setNotes('Enable the LTI launch URL for LMS systems.');
 
         $lurl = \Tk\Uri::create('/lti/'.$this->institution->getHash().'/launch.html');
         if ($this->institution->domain)
             $lurl = \Tk\Uri::create('/lti/launch.html')->setHost($this->institution->domain);
         $lurl->setScheme('https')->toString();
-        $this->form->addField(new Field\Html(Plugin::LTI_URL, $lurl))->setLabel('Launch Url')->setTabGroup('LTI');
+        $this->form->addField(new Field\Html(Plugin::LTI_URL, $lurl))->setLabel('Launch Url');
         $this->institution->getData()->set(Plugin::LTI_URL, $lurl);
 
-        $this->form->addField(new Field\Input(Plugin::LTI_KEY))->setLabel('LTI Key')->setTabGroup('LTI');
-        $this->form->addField(new Field\Input(Plugin::LTI_SECRET))->setLabel('LTI Secret')->setTabGroup('LTI')->
-            setAttr('placeholder', 'Auto Generate');
+        $this->form->addField(new Field\Input(Plugin::LTI_KEY))->setLabel('LTI Key');
+        $this->form->addField(new Field\Input(Plugin::LTI_SECRET))->setLabel('LTI Secret')
+            ->setAttr('placeholder', 'Auto Generate');
         
         $this->form->addField(new Event\Submit('update', array($this, 'doSubmit')));
         $this->form->addField(new Event\Submit('save', array($this, 'doSubmit')));
