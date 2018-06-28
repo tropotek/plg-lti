@@ -155,7 +155,7 @@ class Provider extends ToolProvider\ToolProvider
             if (!$this->user->email) {
                 throw new \Tk\Exception('User email not found! Cannot log in.');
             }
-
+            // Lti Launch data
             $ltiData = array_merge($_GET, $_POST);
             \Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiData);
 
