@@ -40,7 +40,6 @@ class AuthHandler implements Subscriber
             'active' => true
         );
         $adapter->set('userData', $userData);
-        vd();
 
         // Find a valid subject object if available
         if (empty($ltiData['context_label']))
@@ -110,10 +109,6 @@ class AuthHandler implements Subscriber
         );
     }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> ce74245bc8653c777e1cca74e660c6bc7438cc31
     /**
      * @return \App\Config
      */
