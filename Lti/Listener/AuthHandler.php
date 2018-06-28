@@ -21,7 +21,6 @@ class AuthHandler implements Subscriber
      */
     public function onLogin(AuthEvent $event)
     {
-        vd('LTI onLogin');
         /** @var \Lti\Auth\LtiAdapter $adapter */
         $adapter = $event->getAdapter();
         $ltiData = $adapter->get('ltiData');
@@ -42,8 +41,7 @@ class AuthHandler implements Subscriber
             'name' => $adapter->getLtiUser()->fullname,
             'active' => true
         );
-        $event->set('userData', $userData);
-
+        $adapter->set('userData', $userData);
 
         // Find a valid subject object if available
         if (empty($ltiData['context_label']))
@@ -57,7 +55,7 @@ class AuthHandler implements Subscriber
             $ltiData[Provider::LTI_SUBJECT_ID] = (int)$ltiData['subjectId'];
         }
         $subjectData = array(
-            'subjectId' => $ltiData[Provider::LTI_SUBJECT_ID],
+            'id' => !empty($ltiData[Provider::LTI_SUBJECT_ID]) ? (int)$ltiData[Provider::LTI_SUBJECT_ID] : 0,
             'institutionId' => $adapter->getInstitution()->getId(),
             'name' => $ltiData['context_title'],
             'code' => $subjectCode,
@@ -67,67 +65,8 @@ class AuthHandler implements Subscriber
             'dateEnd' => \Tk\Date::create()->add(new \DateInterval('P1Y')),
             'active' => true
         );
-        $event->set('subjectData', $subjectData);
+        $adapter->set('subjectData', $subjectData);
 
-    }
-
-    /**
-     * @param $username
-     * @param $institutionId
-     * @return string
-     */
-    private function makeUniqueUsername($username, $institutionId)
-    {
-        $i = 0;
-        $found = null;
-        do {
-            $i++;
-            $found = Plugin::getPluginApi()->findUser($username, $institutionId);
-            if ($found) {
-                $username = $username.'_'.$i;
-            }
-        } while (!$found);
-        return $username;
-    }
-
-
-
-    /**
-     * @param \Tk\Event\AuthEvent $event
-     * @return null|void
-     * @throws \Tk\Db\Exception
-     * @throws \Tk\Exception
-     */
-    public function onLoginProcess(\Tk\Event\AuthEvent $event)
-    {
-        vd('Lti onLoginProcess');
-        if ($event->getAdapter() instanceof \Lti\Auth\LtiAdapter) {
-            /** @var \Tk\Auth\Adapter\Ldap $adapter */
-            $adapter = $event->getAdapter();
-            $config = \App\Config::getInstance();
-
-            // Find/create user data from lti data
-
-            // Find/create subject data from lti data
-
-            //$event->setResult(new \Tk\Auth\Result(\Tk\Auth\Result::SUCCESS, $user->getId()));
-
-        }
-    }
-
-    /**
-     * @param AuthEvent $event
-     * @throws \Exception
-     */
-    public function onLoginSuccess(AuthEvent $event)
-    {
-        vd('LTI onLoginSuccess');
-        if ($event->get('isLti') === true) {
-            //$event->setRedirect(Plugin::getPluginApi()->getLtiHome($event->get('user'), $event->get('subject')));
-            $event->setRedirect(null);
-            \App\Config::getInstance()->getSession()->set('auth.password.access', false);
-            Plugin::getPluginApi()->getLtiHome($event->get('user'), $event->get('subject'))->redirect();
-        }
     }
 
     /**
@@ -141,6 +80,8 @@ class AuthHandler implements Subscriber
             $event->setRedirect(\Tk\Uri::create($ltiSess['launch_presentation_return_url']));
         }
     }
+
+
 
     /**
      * Returns an array of event names this subscriber wants to listen to.
@@ -166,10 +107,28 @@ class AuthHandler implements Subscriber
     {
         return array(
             AuthEvents::LOGIN => array('onLogin', 10),
-            AuthEvents::LOGIN_PROCESS => array('onLoginProcess', 10),
-            AuthEvents::LOGIN_SUCCESS => array('onLoginSuccess', 0),
             AuthEvents::LOGOUT => array('onLogout', 10)
         );
+    }
+
+
+    /**
+     * @param $username
+     * @param $institutionId
+     * @return string
+     */
+    private function makeUniqueUsername($username, $institutionId)
+    {
+        $i = 0;
+        $found = null;
+        do {
+            $i++;
+            $found = Plugin::getPluginApi()->findUser($username, $institutionId);
+            if ($found) {
+                $username = $username.'_'.$i;
+            }
+        } while (!$found);
+        return $username;
     }
 
     /**

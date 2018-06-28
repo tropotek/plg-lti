@@ -159,9 +159,10 @@ class Provider extends ToolProvider\ToolProvider
             $ltiData = array_merge($_GET, $_POST);
             \Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiData);
 
-            $event = new \Tk\Event\AuthEvent();
-            $event->set('ltiData', $ltiData);
             $adapter = new \Lti\Auth\LtiAdapter($this->user, $this->institution);
+            $adapter->set('ltiData', $ltiData);
+
+            $event = new \Tk\Event\AuthEvent();
             $event->setAdapter($adapter);
             $this->getConfig()->getEventDispatcher()->dispatch(\Tk\Auth\AuthEvents::LOGIN, $event);
             $result = $event->getResult();
@@ -174,11 +175,10 @@ class Provider extends ToolProvider\ToolProvider
             }
 
             // Copy the event to avoid propagation issues
-            $sEvent = new \Tk\Event\AuthEvent();
-            $sEvent->setAdapter($event->getAdapter());
+            $sEvent = new \Tk\Event\AuthEvent($event->getAdapter());
+            $sEvent->replace($event->all());
             $sEvent->setResult($event->getResult());
             $sEvent->setRedirect($event->getRedirect());
-            $sEvent->replace($event->all());
             $this->getConfig()->getEventDispatcher()->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $sEvent);
             if ($sEvent->getRedirect())
                 $sEvent->getRedirect()->redirect();
