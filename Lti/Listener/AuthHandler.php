@@ -30,9 +30,7 @@ class AuthHandler implements Subscriber
         if ($adapter->getLtiUser()->isAdmin() || $adapter->getLtiUser()->isStaff()) {
             $role = 'staff';
         }
-        list($u, $d) = explode('@', $adapter->getLtiUser()->email);
-        // There is a slim possibility that a username may exist, make it unique
-        $username = $this->makeUniqueUsername($u, $adapter->getInstitution()->getId());
+        list($username, $domain) = explode('@', $adapter->getLtiUser()->email);
         $userData = array(
             'institutionId' => $adapter->getInstitution()->getId(),
             'username' => $username,
@@ -109,26 +107,6 @@ class AuthHandler implements Subscriber
             AuthEvents::LOGIN => array('onLogin', 10),
             AuthEvents::LOGOUT => array('onLogout', 10)
         );
-    }
-
-
-    /**
-     * @param $username
-     * @param $institutionId
-     * @return string
-     */
-    private function makeUniqueUsername($username, $institutionId)
-    {
-        $i = 0;
-        $found = null;
-        do {
-            $i++;
-            $found = Plugin::getPluginApi()->findUser($username, $institutionId);
-            if ($found) {
-                $username = $username.'_'.$i;
-            }
-        } while (!$found);
-        return $username;
     }
 
     /**
