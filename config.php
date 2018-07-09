@@ -1,18 +1,15 @@
 <?php
-
 $config = \App\Config::getInstance();
-$routes = $config->getRouteCollection();
-if (!$routes) return;
 
 /** @var \Composer\Autoload\ClassLoader $composer */
 $composer = $config->getComposer();
 if ($composer)
     $composer->add('Lti\\', dirname(__FILE__));
 
-
+$routes = $config->getRouteCollection();
+if (!$routes) return;
 
 $params = array();
-
 
 // LTI launch
 $routes->add('lti-launch', new \Tk\Routing\Route('/lti/launch.html', 'Lti\Controller\Launch::doLaunch', $params));

@@ -3,17 +3,14 @@ namespace Lti\Controller;
 
 use Tk\Request;
 use Dom\Template;
-use Uni\Controller\Iface;
 use Lti\Plugin;
 
 /**
- *
- *
  * @author Michael Mifsud <info@tropotek.com>
  * @see http://www.tropotek.com/
  * @license Copyright 2015 Michael Mifsud
  */
-class Launch extends Iface
+class Launch extends \Bs\Controller\Iface
 {
 
     /**

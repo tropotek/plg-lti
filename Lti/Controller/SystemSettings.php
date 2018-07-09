@@ -5,17 +5,14 @@ use Tk\Request;
 use Tk\Form;
 use Tk\Form\Event;
 use Tk\Form\Field;
-use Uni\Controller\Iface;
 use Lti\Plugin;
 
 /**
- * Class Contact
- *
  * @author Michael Mifsud <info@tropotek.com>
  * @see http://www.tropotek.com/
  * @license Copyright 2015 Michael Mifsud
  */
-class SystemSettings extends Iface
+class SystemSettings extends \Bs\Controller\AdminIface
 {
 
     /**
@@ -62,7 +59,6 @@ class SystemSettings extends Iface
 
         $this->form->load($this->data->toArray());
         $this->form->execute();
-
     }
 
     /**
@@ -120,13 +116,6 @@ class SystemSettings extends Iface
     {
         $xhtml = <<<XHTML
 <div var="content">
-
-    <div class="panel panel-default">
-      <div class="panel-heading"><i class="fa fa-cogs fa-fw"></i> Actions</div>
-      <div class="panel-body " var="action-panel">
-        <a href="javascript: window.history.back();" class="btn btn-default"><i class="fa fa-arrow-left"></i> <span>Back</span></a>
-      </div>
-    </div>
     
     <div class="panel panel-default">
       <div class="panel-heading"><i class="fa fa-cog"></i> LTI Settings</div>

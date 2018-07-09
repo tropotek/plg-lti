@@ -127,4 +127,11 @@ class LtiAdapter extends \Tk\Auth\Adapter\NullAuth
         return new Result(Result::FAILURE_CREDENTIAL_INVALID, '', 'Invalid credentials.');
     }
 
+    /**
+     * @return \App\Config
+     */
+    public function getConfig()
+    {
+        return \App\Config::getInstance();
+    }
 }

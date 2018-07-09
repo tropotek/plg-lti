@@ -5,17 +5,14 @@ use Tk\Request;
 use Tk\Form;
 use Tk\Form\Event;
 use Tk\Form\Field;
-use Uni\Controller\Iface;
 use Lti\Plugin;
 
 /**
- * Class Contact
- *
  * @author Michael Mifsud <info@tropotek.com>
  * @see http://www.tropotek.com/
  * @license Copyright 2015 Michael Mifsud
  */
-class InstitutionSettings extends Iface
+class InstitutionSettings extends \Bs\Controller\AdminIface
 {
 
     /**
@@ -84,10 +81,11 @@ class InstitutionSettings extends Iface
 
     /**
      * @param \Tk\Form $form
+     * @param \Tk\Form\Event\Iface $event
      * @throws \Tk\Db\Exception
      * @throws \Tk\Exception
      */
-    public function doSubmit($form)
+    public function doSubmit($form, $event)
     {
         $values = $form->getValues();
         $this->data->replace($values);
@@ -147,10 +145,10 @@ class InstitutionSettings extends Iface
         $this->data->save();
         
         \Tk\Alert::addSuccess('LTI settings saved.');
-        if ($form->getTriggeredEvent()->getName() == 'update') {
-            $this->getConfig()->getSession()->getBackUrl()->redirect();
+        $event->setRedirect($this->getConfig()->getBackUrl());
+        if ($form->getTriggeredEvent()->getName() == 'save') {
+            $event->setRedirect(\Tk\Uri::create());
         }
-        \Tk\Uri::create()->redirect();
     }
 
     /**
