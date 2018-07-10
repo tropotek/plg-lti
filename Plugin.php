@@ -78,7 +78,7 @@ class Plugin extends \Tk\Plugin\Iface
     }
 
     /**
-     * @param \App\Db\Institution $institution
+     * @param \Uni\Db\Institution $institution
      * @return \Tk\Db\Data
      * @throws \Tk\Db\Exception
      * @throws \Tk\Exception
@@ -90,7 +90,7 @@ class Plugin extends \Tk\Plugin\Iface
     }
 
     /**
-     * @param \App\Db\Institution $institution
+     * @param \Uni\Db\Institution $institution
      * @return \IMSGlobal\LTI\ToolProvider\ToolConsumer
      * @throws \Tk\Db\Exception
      * @throws \Tk\Exception

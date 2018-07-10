@@ -21,7 +21,7 @@ class InstitutionSettings extends \Bs\Controller\AdminIface
     protected $form = null;
 
     /**
-     * @var \App\Db\Institution
+     * @var \Uni\Db\Institution
      */
     protected $institution = null;
 
@@ -50,7 +50,8 @@ class InstitutionSettings extends \Bs\Controller\AdminIface
      */
     public function doDefault(Request $request)
     {
-        $this->institution = \App\Db\InstitutionMap::create()->find($request->get('zoneId'));
+        $this->institution = $this->getConfig()->findInstitution($request->get('zoneId'));
+
         $this->data = Plugin::getInstitutionData($this->institution);
 
         $this->form = \Uni\Config::createForm('formEdit');
@@ -175,13 +176,6 @@ class InstitutionSettings extends \Bs\Controller\AdminIface
     {
         $xhtml = <<<XHTML
 <div var="content">
-
-    <div class="panel panel-default">
-      <div class="panel-heading"><i class="fa fa-cogs fa-fw"></i> Actions</div>
-      <div class="panel-body " var="action-panel">
-        <a href="javascript: window.history.back();" class="btn btn-default"><i class="fa fa-arrow-left"></i> <span>Back</span></a>
-      </div>
-    </div>
   
     <div class="panel panel-default">
       <div class="panel-heading">
