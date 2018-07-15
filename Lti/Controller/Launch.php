@@ -14,7 +14,7 @@ class Launch extends \Bs\Controller\Iface
 {
 
     /**
-     * @var \App\Db\Institution
+     * @var \Uni\Db\InstitutionIface
      */
     protected $institution = null;
 
@@ -27,7 +27,7 @@ class Launch extends \Bs\Controller\Iface
      */
     public function doLaunch(Request $request)
     {
-        $this->institution = \App\Db\InstitutionMap::create()->findByDomain($request->getUri()->getHost());
+        $this->institution = $this->getConfig()->getInstitutionMapper()->findByDomain($request->getUri()->getHost());
         if ($this->institution) {
             $this->doInsLaunch($request, $this->institution->getHash());
         }
@@ -44,7 +44,7 @@ class Launch extends \Bs\Controller\Iface
     public function doInsLaunch(Request $request, $instHash)
     {
         if (!$this->institution)
-            $this->institution = \App\Db\InstitutionMap::create()->findByHash($instHash);
+            $this->institution = $this->getConfig()->getInstitutionMapper()->findByHash($instHash);
 
         if (!$this->institution) {
             throw new \Tk\NotFoundHttpException('Institution not found.');
@@ -59,7 +59,6 @@ class Launch extends \Bs\Controller\Iface
             $provider = new \Lti\Provider(Plugin::getLtiDataConnector(), $this->institution, $this->getConfig()->getEventDispatcher());
             $_POST['custom_tc_profile_url'] = '';   // Hack to speed up the launch process as we do not need this url
             $provider->handleRequest();
-
             if ($provider->message) {
                 $msg .= $provider->message . '<br/>';
             }

@@ -1,7 +1,6 @@
 <?php
 namespace Lti;
 
-use App\Db\Institution;
 use IMSGlobal\LTI\ToolProvider;
 use IMSGlobal\LTI\ToolProvider\DataConnector\DataConnector;
 use Tk\Event\Dispatcher;
@@ -17,12 +16,12 @@ class Provider extends ToolProvider\ToolProvider
     const LTI_SUBJECT_ID = 'custom_subjectid';
 
     /**
-     * @var \App\Db\Subject
+     * @var \Uni\Db\SubjectIface
      */
     protected static $subject = null;
 
     /**
-     * @var Institution
+     * @var \Uni\Db\InstitutionIface
      */
     protected $institution = null;
 
@@ -36,7 +35,7 @@ class Provider extends ToolProvider\ToolProvider
      * Provider constructor.
      *
      * @param DataConnector $dataConnector
-     * @param Institution $institution
+     * @param \Uni\Db\InstitutionIface $institution
      * @param Dispatcher $dispatcher
      */
     public function __construct(DataConnector $dataConnector, $institution = null, $dispatcher = null)
@@ -79,13 +78,14 @@ class Provider extends ToolProvider\ToolProvider
     /**
      * Get the LTi session
      *
-     * @return \App\Db\Subject|\Tk\Db\Map\Model
+     * @return \Uni\Db\SubjectIface|\Tk\Db\Map\Model
+     * @throws \Tk\Db\Exception
      */
     public static function getLtiSubject()
     {
         if (!self::$subject && isset($ltiSes[self::LTI_SUBJECT_ID])) {
             $ltiSes = self::getLtiSession();
-            self::$subject = Plugin::getPluginApi()->findSubject($ltiSes[self::LTI_SUBJECT_ID]);
+            self::$subject = \App\Config::getInstance()->getSubjectMapper()->find($ltiSes[self::LTI_SUBJECT_ID]);
         }
         return self::$subject;
     }
@@ -93,7 +93,7 @@ class Provider extends ToolProvider\ToolProvider
     /**
      * Get the LTi session institution
      *
-     * @return Institution|\Tk\Db\Map\Model
+     * @return \Uni\Db\InstitutionIface|\Tk\Db\Map\Model
      * @throws \Tk\Db\Exception
      * @throws \Tk\Exception
      */
@@ -168,16 +168,19 @@ class Provider extends ToolProvider\ToolProvider
             $adapter = new \Lti\Auth\LtiAdapter($this->user, $this->institution);
             $adapter->set('ltiData', $ltiData);
 
+            //vd($ltiData);
+
             $event = new \Tk\Event\AuthEvent($adapter);
             $this->getConfig()->getEventDispatcher()->dispatch(\Tk\Auth\AuthEvents::LOGIN, $event);
             $result = $event->getResult();
-
             if (!$result || !$result->isValid()) {
                 if ($result) {
                     throw new \Tk\Exception(implode("\n", $result->getMessages()));
                 }
                 throw new \Tk\Exception('Cannot connect to LTI interface, please contact your course coordinator.');
             }
+
+
 
             // Copy the event to avoid propagation issues
             $sEvent = new \Tk\Event\AuthEvent($adapter);
@@ -188,7 +191,7 @@ class Provider extends ToolProvider\ToolProvider
             if ($sEvent->getRedirect())
                 $sEvent->getRedirect()->redirect();
 
-            \Tk\Config::getInstance()->getLog()->warning('Remember to redirect to a valid LTI page.');
+            \Tk\Log::warning('Remember to redirect to a valid LTI page.');
         } catch (\Exception $e) {
             $this->message = $e->getMessage();  // This will be shown in the host app
             $this->reason = '';

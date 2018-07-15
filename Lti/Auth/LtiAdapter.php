@@ -106,6 +106,7 @@ class LtiAdapter extends \Tk\Auth\Adapter\NullAuth
      */
     public function authenticate()
     {
+        vd($this->get('username'));
         $username = $this->get('username');
         if (!$username) {
             return new Result(Result::FAILURE_CREDENTIAL_INVALID, $username, 'Invalid username or password.');
@@ -116,6 +117,7 @@ class LtiAdapter extends \Tk\Auth\Adapter\NullAuth
             if ($dispatcher) {
                 $event = new \Tk\Event\AuthEvent($this);
                 $dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_PROCESS, $event);
+
                 if ($event->getResult()) {
                     return $event->getResult();
                 }

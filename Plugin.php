@@ -72,25 +72,26 @@ class Plugin extends \Tk\Plugin\Iface
     public static function getLtiDataConnector()
     {
         if (!self::$dataConnector) {
-            self::$dataConnector = \IMSGlobal\LTI\ToolProvider\DataConnector\DataConnector::getDataConnector(self::$LTI_DB_PREFIX, \Uni\Config::getInstance()->getDb(), 'pdo');
+            self::$dataConnector = \IMSGlobal\LTI\ToolProvider\DataConnector\DataConnector::getDataConnector(self::$LTI_DB_PREFIX,
+                \Uni\Config::getInstance()->getDb(), 'pdo');
         }
         return self::$dataConnector;
     }
 
     /**
-     * @param \Uni\Db\Institution $institution
+     * @param \Uni\Db\InstitutionIface $institution
      * @return \Tk\Db\Data
      * @throws \Tk\Db\Exception
      * @throws \Tk\Exception
      */
     public static function getInstitutionData($institution)
     {
-        \Uni\Config::getInstance()->setInstitution($institution);
+        \Uni\Config::getInstance()->set('institution', $institution);
         return self::$institutionData = \Tk\Db\Data::create(self::getInstance()->getName() . '.institution', $institution->getId());
     }
 
     /**
-     * @param \Uni\Db\Institution $institution
+     * @param \Uni\Db\InstitutionIface $institution
      * @return \IMSGlobal\LTI\ToolProvider\ToolConsumer
      * @throws \Tk\Db\Exception
      * @throws \Tk\Exception
@@ -118,7 +119,8 @@ class Plugin extends \Tk\Plugin\Iface
     public static function ltiKeyExists($consumer_key256, $ignoreId = 0)
     {
         $db = \Uni\Config::getInstance()->getDb();
-        $sql = sprintf('SELECT * FROM %s WHERE consumer_key256 = %s', $db->quoteParameter(self::$LTI_DB_PREFIX.'lti2_consumer'), $db->quote($consumer_key256));
+        $sql = sprintf('SELECT * FROM %s WHERE consumer_key256 = %s',
+            $db->quoteParameter(self::$LTI_DB_PREFIX.'lti2_consumer'), $db->quote($consumer_key256));
         if ($ignoreId) {
             $sql .= sprintf(' AND consumer_pk != %s ', (int)$ignoreId);
         }
@@ -157,7 +159,6 @@ class Plugin extends \Tk\Plugin\Iface
      * This is called when the session first registers the plugin to the queue
      * So it is the first called method after the constructor.....
      *
-     * @throws \Tk\Exception
      */
     function doInit()
     {

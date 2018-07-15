@@ -70,6 +70,13 @@ class AuthHandler implements Subscriber
         );
         $adapter->set('subjectData', $subjectData);
 
+
+        $auth = $this->getConfig()->getAuth();
+        $result = $auth->authenticate($adapter);
+        $event->setResult($result);
+
+
+        vd('------2');
     }
 
     /**
@@ -114,7 +121,7 @@ class AuthHandler implements Subscriber
     public static function getSubscribedEvents()
     {
         return array(
-            AuthEvents::LOGIN => array('onLogin', 10),
+            AuthEvents::LOGIN => array('onLogin', -10), // Must run before app AuthHandler
             AuthEvents::LOGOUT => array('onLogout', 10)
         );
     }
