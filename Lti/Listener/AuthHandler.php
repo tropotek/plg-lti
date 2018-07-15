@@ -23,6 +23,9 @@ class AuthHandler implements Subscriber
     {
         /** @var \Lti\Auth\LtiAdapter $adapter */
         $adapter = $event->getAdapter();
+
+        if (!$adapter instanceof \Lti\Auth\LtiAdapter) return;
+
         if (!Plugin::isEnabled($adapter->getInstitution())) return;
         //vd('LTI onLogin');
 
@@ -75,8 +78,7 @@ class AuthHandler implements Subscriber
         $result = $auth->authenticate($adapter);
         $event->setResult($result);
 
-
-        vd('------2');
+        $event->stopPropagation();
     }
 
     /**
