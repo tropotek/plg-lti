@@ -23,11 +23,8 @@ class AuthHandler implements Subscriber
     {
         /** @var \Lti\Auth\LtiAdapter $adapter */
         $adapter = $event->getAdapter();
-
         if (!$adapter instanceof \Lti\Auth\LtiAdapter) return;
-
         if (!Plugin::isEnabled($adapter->getInstitution())) return;
-        //vd('LTI onLogin');
 
         $ltiData = $adapter->get('ltiData');
         if (!$ltiData) return;
@@ -73,7 +70,6 @@ class AuthHandler implements Subscriber
         );
         $adapter->set('subjectData', $subjectData);
 
-
         $auth = $this->getConfig()->getAuth();
         $result = $auth->authenticate($adapter);
         $event->setResult($result);
@@ -87,15 +83,17 @@ class AuthHandler implements Subscriber
      */
     public function onLogout(AuthEvent $event)
     {
-        // Clear the LTI session data
-        \Lti\Provider::clearLtiSession();
-
+        if (!\Lti\Provider::isLti()) return;
 
         // TODO: handle this redirect in the app if requred
-//        $ltiSess = \Lti\Provider::getLtiSession();
-//        if (\Lti\Provider::isLti() && !empty($ltiSess['launch_presentation_return_url'])) {
-//            $event->setRedirect(\Tk\Uri::create($ltiSess['launch_presentation_return_url']));
-//        }
+        $ltiSess = \Lti\Provider::getLtiSession();
+
+        if (!empty($ltiSess['launch_presentation_return_url'])) {
+            $event->setRedirect(\Tk\Uri::create($ltiSess['launch_presentation_return_url']));
+        }
+
+        // Clear the LTI session data
+        \Lti\Provider::clearLtiSession();
     }
 
 
@@ -124,7 +122,7 @@ class AuthHandler implements Subscriber
     {
         return array(
             AuthEvents::LOGIN => array('onLogin', -10), // Must run before app AuthHandler
-            AuthEvents::LOGOUT => array('onLogout', 10)
+            AuthEvents::LOGOUT => array('onLogout', -10)
         );
     }
 
