@@ -12,7 +12,7 @@ use Lti\Plugin;
  * @see http://www.tropotek.com/
  * @license Copyright 2015 Michael Mifsud
  */
-class InstitutionSettings extends \Bs\Controller\AdminIface
+class InstitutionSettings extends \Uni\Controller\AdminIface
 {
 
     /**
@@ -50,12 +50,12 @@ class InstitutionSettings extends \Bs\Controller\AdminIface
      */
     public function doDefault(Request $request)
     {
-        $this->institution = $this->getConfig()->findInstitution($request->get('zoneId'));
+        $this->institution = $this->getConfig()->getInstitutionMapper()->find($request->get('zoneId'));
 
         $this->data = Plugin::getInstitutionData($this->institution);
 
-        $this->form = \Uni\Config::createForm('formEdit');
-        $this->form->setRenderer(\Uni\Config::createFormRenderer($this->form));
+        $this->form = $this->getConfig()->createForm('formEdit');
+        $this->form->setRenderer($this->getConfig()->createFormRenderer($this->form));
 
         $this->form->addField(new Field\Checkbox(Plugin::LTI_ENABLE))->addCss('tk-input-toggle')->setLabel('Enable LTI')
             ->setTabGroup('LTI')->setNotes('Enable the LTI launch URL for LMS systems.');
@@ -73,7 +73,7 @@ class InstitutionSettings extends \Bs\Controller\AdminIface
         
         $this->form->addField(new Event\Submit('update', array($this, 'doSubmit')));
         $this->form->addField(new Event\Submit('save', array($this, 'doSubmit')));
-        $this->form->addField(new Event\LinkButton('cancel', $this->getConfig()->getSession()->getBackUrl()));
+        $this->form->addField(new Event\LinkButton('cancel', $this->getBackUrl()));
 
         $this->form->load($this->data->toArray());
         $this->form->execute();
@@ -83,8 +83,7 @@ class InstitutionSettings extends \Bs\Controller\AdminIface
     /**
      * @param \Tk\Form $form
      * @param \Tk\Form\Event\Iface $event
-     * @throws \Tk\Db\Exception
-     * @throws \Tk\Exception
+     * @throws \Exception
      */
     public function doSubmit($form, $event)
     {
@@ -146,7 +145,7 @@ class InstitutionSettings extends \Bs\Controller\AdminIface
         $this->data->save();
         
         \Tk\Alert::addSuccess('LTI settings saved.');
-        $event->setRedirect($this->getConfig()->getBackUrl());
+        $event->setRedirect($this->getBackUrl());
         if ($form->getTriggeredEvent()->getName() == 'save') {
             $event->setRedirect(\Tk\Uri::create());
         }

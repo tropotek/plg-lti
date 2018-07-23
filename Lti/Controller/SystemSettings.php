@@ -12,7 +12,7 @@ use Lti\Plugin;
  * @see http://www.tropotek.com/
  * @license Copyright 2015 Michael Mifsud
  */
-class SystemSettings extends \Bs\Controller\AdminIface
+class SystemSettings extends \Uni\Controller\AdminIface
 {
 
     /**
@@ -47,15 +47,15 @@ class SystemSettings extends \Bs\Controller\AdminIface
      */
     public function doDefault(Request $request)
     {
-        $this->form = \Uni\Config::createForm('formEdit');
-        $this->form->setRenderer(\Uni\Config::createFormRenderer($this->form));
+        $this->form = $this->getConfig()->createForm('formEdit');
+        $this->form->setRenderer($this->getConfig()->createFormRenderer($this->form));
 
         $this->form->addField(new Field\Input('plugin.title'))->setLabel('Site Title')->setRequired(true);
         $this->form->addField(new Field\Input('plugin.email'))->setLabel('Site Email')->setRequired(true);
         
         $this->form->addField(new Event\Submit('update', array($this, 'doSubmit')));
         $this->form->addField(new Event\Submit('save', array($this, 'doSubmit')));
-        $this->form->addField(new Event\LinkButton('cancel', $this->getConfig()->getSession()->getBackUrl()));
+        $this->form->addField(new Event\LinkButton('cancel', $this->getBackUrl()));
 
         $this->form->load($this->data->toArray());
         $this->form->execute();
@@ -87,7 +87,7 @@ class SystemSettings extends \Bs\Controller\AdminIface
         
         \Tk\Alert::addSuccess('Site settings saved.');
         if ($form->getTriggeredEvent()->getName() == 'update') {
-            $this->getConfig()->getSession()->getBackUrl()->redirect();
+            $this->getConfig()->getBackUrl()->redirect();
         }
         \Tk\Uri::create()->redirect();
     }

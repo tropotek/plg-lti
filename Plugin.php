@@ -50,21 +50,10 @@ class Plugin extends \Tk\Plugin\Iface
      * A helper method to get the Plugin instance globally
      *
      * @return Plugin|\Tk\Plugin\Iface
-     * @throws \Tk\Exception
      */
     public static function getInstance()
     {
         return \App\Config::getInstance()->getPluginFactory()->getPlugin('plg-lti');
-    }
-
-    /**
-     * @return \App\PluginApi|\Uni\PluginApi
-     * @deprecated
-     */
-    public static function getPluginApi()
-    {
-        return null;
-        //return \Uni\Config::getInstance()->getPluginApi();
     }
 
     /**
@@ -83,8 +72,7 @@ class Plugin extends \Tk\Plugin\Iface
     /**
      * @param \Uni\Db\InstitutionIface $institution
      * @return \Tk\Db\Data
-     * @throws \Tk\Db\Exception
-     * @throws \Tk\Exception
+     * @throws \Exception
      */
     public static function getInstitutionData($institution)
     {
@@ -95,8 +83,7 @@ class Plugin extends \Tk\Plugin\Iface
     /**
      * @param \Uni\Db\InstitutionIface $institution
      * @return \IMSGlobal\LTI\ToolProvider\ToolConsumer
-     * @throws \Tk\Db\Exception
-     * @throws \Tk\Exception
+     * @throws \Exception
      */
     public static function getLtiConsumer($institution)
     {
@@ -134,8 +121,7 @@ class Plugin extends \Tk\Plugin\Iface
      *
      * @param \Uni\Db\InstitutionIface $institution
      * @return bool
-     * @throws \Tk\Db\Exception
-     * @throws \Tk\Exception
+     * @throws \Exception
      */
     public static function isEnabled($institution)
     {
@@ -179,7 +165,6 @@ class Plugin extends \Tk\Plugin\Iface
      * Will only be called when activating the plugin in the
      * plugin control panel
      *
-     * @throws \Tk\Exception
      * @throws \Exception
      */
     function doActivate()
@@ -200,7 +185,7 @@ class Plugin extends \Tk\Plugin\Iface
      * Will only be called when deactivating the plugin in the
      * plugin control panel
      *
-     * @throws \Tk\Db\Exception
+     * @throws \Exception
      */
     function doDeactivate()
     {
@@ -235,7 +220,7 @@ class Plugin extends \Tk\Plugin\Iface
     {
         switch ($zoneName) {
             case self::ZONE_INSTITUTION:
-                return \Tk\Uri::create('/lti/institutionSettings.html');
+                return \Bs\Uri::createHomeUrl('/ltiInstitutionSettings.html');
         }
         return null;
     }

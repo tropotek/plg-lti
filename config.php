@@ -16,12 +16,9 @@ $routes->add('lti-launch', new \Tk\Routing\Route('/lti/launch.html', 'Lti\Contro
 $routes->add('institution-lti-launch', new \Tk\Routing\Route('/lti/{instHash}/launch.html', 'Lti\Controller\Launch::doInsLaunch', $params));
 
 
-$params = array('role' => 'admin');
-$routes->add('LTI Admin Settings', new \Tk\Routing\Route('/lti/adminSettings.html', 'Lti\Controller\SystemSettings::doDefault', $params));
+$routes->add('lti-admin-settings', new \Tk\Routing\Route('/admin/ltiSettings.html', 'Lti\Controller\SystemSettings::doDefault'));
 
-
-$params = array('role' => array('admin', 'client'));
-$routes->add('LTI Institution Settings', new \Tk\Routing\Route('/lti/institutionSettings.html', 'Lti\Controller\InstitutionSettings::doDefault', $params));
-
+$routes->add('lti-admin-institution-settings', new \Tk\Routing\Route('/admin/ltiInstitutionSettings.html', 'Lti\Controller\InstitutionSettings::doDefault'));
+$routes->add('lti-client-institution-settings', new \Tk\Routing\Route('/client/ltiInstitutionSettings.html', 'Lti\Controller\InstitutionSettings::doDefault'));
 
 
