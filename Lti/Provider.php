@@ -30,6 +30,11 @@ class Provider extends ToolProvider\ToolProvider
      */
     protected $dispatcher = null;
 
+    /**
+     * @var null|\Exception
+     */
+    protected $e = null;
+
 
     /**
      * Provider constructor.
@@ -165,22 +170,21 @@ class Provider extends ToolProvider\ToolProvider
             $ltiData = array_merge($_GET, $_POST);
             \Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiData);
 
+            //vd($ltiData);
+
             $adapter = new \Lti\Auth\LtiAdapter($this->user, $this->institution);
             $adapter->set('ltiData', $ltiData);
-
-            //vd($ltiData);
 
             $event = new \Tk\Event\AuthEvent($adapter);
             $this->getConfig()->getEventDispatcher()->dispatch(\Tk\Auth\AuthEvents::LOGIN, $event);
             $result = $event->getResult();
+
             if (!$result || !$result->isValid()) {
                 if ($result) {
                     throw new \Tk\Exception(implode("\n", $result->getMessages()));
                 }
                 throw new \Tk\Exception('Cannot connect to LTI interface, please contact your course coordinator.');
             }
-
-
 
             // Copy the event to avoid propagation issues
             $sEvent = new \Tk\Event\AuthEvent($adapter);
@@ -193,6 +197,7 @@ class Provider extends ToolProvider\ToolProvider
 
             \Tk\Log::warning('Remember to redirect to a valid LTI page.');
         } catch (\Exception $e) {
+            $this->e = $e;
             $this->message = $e->getMessage();  // This will be shown in the host app
             $this->reason = '';
             if ($this->getConfig()->isDebug()) {
@@ -234,8 +239,11 @@ class Provider extends ToolProvider\ToolProvider
      */
     function onError()
     {
+        if ($this->e) {
+            vdd($this->e->__toString());
+        }
         vd('LTI: onError', $this->reason, $this->message);
-        //return true;        // Stops redirect back to app, in-case you want to show an error messages locally
+        return true;        // Stops redirect back to app, in-case you want to show an error messages locally
     }
 
 

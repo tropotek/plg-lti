@@ -106,6 +106,7 @@ class LtiAdapter extends \Tk\Auth\Adapter\NullAuth
      */
     public function authenticate()
     {
+        $msg = 'Invalid credentials.';
         $username = $this->get('username');
         if (!$username) {
             return new Result(Result::FAILURE_CREDENTIAL_INVALID, $username, 'Invalid username or password.');
@@ -124,8 +125,9 @@ class LtiAdapter extends \Tk\Auth\Adapter\NullAuth
             return new Result(Result::SUCCESS, $username);
         } catch (\Exception $e) {
             \Tk\Log::warning($e->getMessage());
+            $msg = $e->getMessage();
         }
-        return new Result(Result::FAILURE_CREDENTIAL_INVALID, '', 'Invalid credentials.');
+        return new Result(Result::FAILURE_CREDENTIAL_INVALID, '', $msg);
     }
 
     /**

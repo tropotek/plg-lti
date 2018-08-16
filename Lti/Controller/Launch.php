@@ -21,9 +21,7 @@ class Launch extends \Bs\Controller\Iface
 
     /**
      * @param Request $request
-     * @throws \Dom\Exception
-     * @throws \Tk\Db\Exception
-     * @throws \Tk\Exception
+     * @throws \Exception
      */
     public function doLaunch(Request $request)
     {
@@ -37,9 +35,7 @@ class Launch extends \Bs\Controller\Iface
      * @param Request $request
      * @param $instHash
      * @return \Dom\Template|Template|string
-     * @throws \Dom\Exception
-     * @throws \Tk\Db\Exception
-     * @throws \Tk\Exception
+     * @throws \Exception
      */
     public function doInsLaunch(Request $request, $instHash)
     {

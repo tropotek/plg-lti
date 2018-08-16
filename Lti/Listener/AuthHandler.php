@@ -47,8 +47,10 @@ class AuthHandler implements Subscriber
         $adapter->set('userData', $userData);
 
         // Find a valid subject object if available
-        if (empty($ltiData['context_label']))
+        vd($ltiData);
+        if (empty($ltiData['context_label'])) {
             throw new \Tk\Exception('Subject not available, Please contact the LMS administrator.');
+        }
 
         $subjectCode = preg_replace('/[^a-z0-9_-]/i', '_', $ltiData['context_label']);
         $subject = null;
