@@ -1,5 +1,10 @@
 #CHANGELOG#
 
+Ver 2.0.20 [2018-09-04]:
+-------------------------------
+  - Started implementing new cube template
+
+
 Ver 2.0.18 [2018-08-17]:
 -------------------------------
   - fixed lti login stuff
