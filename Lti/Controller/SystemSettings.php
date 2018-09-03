@@ -65,9 +65,10 @@ class SystemSettings extends \Uni\Controller\AdminIface
      * doSubmit()
      *
      * @param Form $form
+     * @param \Tk\Form\Event\Iface $event
      * @throws \Tk\Db\Exception
      */
-    public function doSubmit($form)
+    public function doSubmit($form, $event)
     {
         $values = $form->getValues();
         $this->data->replace($values);
@@ -86,10 +87,10 @@ class SystemSettings extends \Uni\Controller\AdminIface
         $this->data->save();
         
         \Tk\Alert::addSuccess('Site settings saved.');
+        $event->setRedirect(\Tk\Uri::create());
         if ($form->getTriggeredEvent()->getName() == 'update') {
-            $this->getConfig()->getBackUrl()->redirect();
+            $event->setRedirect($this->getConfig()->getBackUrl());
         }
-        \Tk\Uri::create()->redirect();
     }
 
     /**
@@ -102,7 +103,7 @@ class SystemSettings extends \Uni\Controller\AdminIface
         $template = parent::show();
         
         // Render the form
-        $template->insertTemplate($this->form->getId(), $this->form->getRenderer()->show());
+        $template->insertTemplate('form', $this->form->getRenderer()->show());
 
         return $template;
     }
@@ -117,12 +118,7 @@ class SystemSettings extends \Uni\Controller\AdminIface
         $xhtml = <<<XHTML
 <div var="content">
     
-    <div class="panel panel-default">
-      <div class="panel-heading"><i class="fa fa-cog"></i> LTI Settings</div>
-      <div class="panel-body">
-        <div var="formEdit"></div>
-      </div>
-    </div>
+  <div class="tk-panel" data-panel-title="LTI Settings" data-panel-icon="fa fa-cog" var="form"></div>
     
 </div>
 XHTML;

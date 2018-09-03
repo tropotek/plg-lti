@@ -41,8 +41,6 @@ class InstitutionSettings extends \Uni\Controller\AdminIface
     }
 
     /**
-     * doDefault
-     *
      * @param Request $request
      * @return void
      * @throws Form\Exception
@@ -58,7 +56,7 @@ class InstitutionSettings extends \Uni\Controller\AdminIface
         $this->form->setRenderer($this->getConfig()->createFormRenderer($this->form));
 
         $this->form->addField(new Field\Checkbox(Plugin::LTI_ENABLE))->addCss('tk-input-toggle')->setLabel('Enable LTI')
-            ->setTabGroup('LTI')->setNotes('Enable the LTI launch URL for LMS systems.');
+            ->setTabGroup('LTI')->setCheckboxLabel('Enable the LTI launch URL for LMS systems.');
 
         $lurl = \Tk\Uri::create('/lti/'.$this->institution->getHash().'/launch.html');
         if ($this->institution->domain)
@@ -161,7 +159,7 @@ class InstitutionSettings extends \Uni\Controller\AdminIface
         $template = parent::show();
         
         // Render the form
-        $template->insertTemplate($this->form->getId(), $this->form->getRenderer()->show());
+        $template->prependTemplate('form', $this->form->getRenderer()->show());
 
         return $template;
     }
@@ -176,17 +174,10 @@ class InstitutionSettings extends \Uni\Controller\AdminIface
         $xhtml = <<<XHTML
 <div var="content">
   
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <i class="fa fa-cog"></i>
-        LTI Settings
-      </div>
-      <div class="panel-body">
-        <div var="formEdit"></div>
-        <hr/>
-        <p>Includes support for LTI 1.1 and the unofficial extensions to LTI 1.0, as well as the registration process and services of LTI 2.0.</p>
-      </div>
-    </div>
+  <div class="tk-panel" data-panel-title="LTI Settings" data-panel-icon="fa fa-cog" var="form">
+    <hr/>
+    <p>Includes support for LTI 1.1 and the unofficial extensions to LTI 1.0, as well as the registration process and services of LTI 2.0.</p>
+  </div>
   
 </div>
 XHTML;
