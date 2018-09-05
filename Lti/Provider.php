@@ -187,10 +187,14 @@ class Provider extends ToolProvider\ToolProvider
             }
 
             // Copy the event to avoid propagation issues
+
+
             $sEvent = new \Tk\Event\AuthEvent($adapter);
             $sEvent->replace($event->all());
             $sEvent->setResult($event->getResult());
             $sEvent->setRedirect($event->getRedirect());
+            if (!$sEvent->getRedirect())
+                $sEvent->setRedirect($adapter->getLoginProcessEvent()->getRedirect());
             $this->getConfig()->getEventDispatcher()->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $sEvent);
             if ($sEvent->getRedirect())
                 $sEvent->getRedirect()->redirect();

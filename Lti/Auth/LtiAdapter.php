@@ -10,7 +10,7 @@ use Tk\Auth\Result;
  * @link http://www.tropotek.com/
  * @license Copyright 2018 Michael Mifsud
  */
-class LtiAdapter extends \Tk\Auth\Adapter\NullAuth
+class LtiAdapter extends \Tk\Auth\Adapter\Iface
 {
     /**
      * @var \IMSGlobal\LTI\ToolProvider\User
@@ -112,15 +112,9 @@ class LtiAdapter extends \Tk\Auth\Adapter\NullAuth
             return new Result(Result::FAILURE_CREDENTIAL_INVALID, $username, 'Invalid username or password.');
         }
         try {
-            /** @var \Tk\Event\Dispatcher $dispatcher */
-            $dispatcher = $this->getConfig()->getEventDispatcher();
-            if ($dispatcher) {
-                $event = new \Tk\Event\AuthEvent($this);
-                $dispatcher->dispatch(\Tk\Auth\AuthEvents::LOGIN_PROCESS, $event);
-
-                if ($event->getResult()) {
-                    return $event->getResult();
-                }
+            $this->dispatchLoginProcess();
+            if ($this->getLoginProcessEvent()->getResult()) {
+                return $this->getLoginProcessEvent()->getResult();
             }
             return new Result(Result::SUCCESS, $username);
         } catch (\Exception $e) {
