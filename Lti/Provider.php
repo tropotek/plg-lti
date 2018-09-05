@@ -84,7 +84,7 @@ class Provider extends ToolProvider\ToolProvider
      * Get the LTi session
      *
      * @return \Uni\Db\SubjectIface|\Tk\Db\Map\Model
-     * @throws \Tk\Db\Exception
+     * @throws \Exception
      */
     public static function getLtiSubject()
     {
@@ -235,7 +235,7 @@ class Provider extends ToolProvider\ToolProvider
      * property for the cause of the error.
      * Return TRUE if the error was fully handled by this method.
      *
-     * @return void
+     * @return bool
      */
     function onError()
     {
