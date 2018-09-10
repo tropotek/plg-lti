@@ -1,5 +1,10 @@
 #CHANGELOG#
 
+Ver 2.0.22 [2018-09-11]:
+-------------------------------
+  - Still updating new-template branch
+
+
 Ver 2.0.20 [2018-09-04]:
 -------------------------------
   - Started implementing new cube template
