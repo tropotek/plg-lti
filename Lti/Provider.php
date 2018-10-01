@@ -168,7 +168,8 @@ class Provider extends ToolProvider\ToolProvider
             }
             // Lti Launch data
             $ltiData = array_merge($_GET, $_POST);
-            \Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiData);
+            //\Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiData);
+            $this->getConfig()->getSession()->set(self::LTI_LAUNCH, $ltiData);
 
             //vd($ltiData);
 
