@@ -38,7 +38,7 @@ class MenuHandler implements Subscriber
         if (!\Lti\Provider::isLti()) return;
 
 //        /** @var \Bs\Controller\Iface $controller */
-//        $controller = $event->getController();
+//        $controller = $event->getControllerObject();
 //        if(method_exists($controller, 'getPage')) {
 //            $page = $controller->getPage();
 //            $nav = $page->getNavbar();
