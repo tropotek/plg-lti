@@ -1,5 +1,9 @@
 #CHANGELOG#
 
+Ver 2.0.26 [2018-12-13]:
+-------------------------------
+
+
 Ver 2.0.24 [2018-10-03]:
 -------------------------------
   - Merge branch 'master' of https://github.com/tropotek/plg-lti
