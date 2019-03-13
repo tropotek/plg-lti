@@ -30,6 +30,8 @@ class AuthHandler implements Subscriber
 
         $ltiData = $adapter->get('ltiData');
         if (!$ltiData) return;
+        
+        vd($ltiData);
 
         // Gather user details
         $role = 'student';

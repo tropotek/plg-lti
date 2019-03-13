@@ -46,7 +46,11 @@ class Launch extends \Bs\Controller\Iface
             throw new \Tk\NotFoundHttpException('Institution not found.');
         }
 
-        if (!$request->has('lti_version') || !$request->has('ext_lms')) {
+        //if (!$request->has('lti_version') || !$request->has('ext_lms')) {     // Removed because Canvas does not have the ext_lms key
+
+
+        
+        if (!$request->has('lti_version')) {
             return $this->show();
         }
 
