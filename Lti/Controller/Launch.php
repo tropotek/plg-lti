@@ -47,9 +47,6 @@ class Launch extends \Bs\Controller\Iface
         }
 
         //if (!$request->has('lti_version') || !$request->has('ext_lms')) {     // Removed because Canvas does not have the ext_lms key
-
-
-        
         if (!$request->has('lti_version')) {
             return $this->show();
         }
