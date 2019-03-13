@@ -99,8 +99,7 @@ class Provider extends ToolProvider\ToolProvider
      * Get the LTi session institution
      *
      * @return \Uni\Db\InstitutionIface|\Tk\Db\Map\Model
-     * @throws \Tk\Db\Exception
-     * @throws \Tk\Exception
+     * @throws \Exception
      */
     public static function getLtiInstitution()
     {
@@ -171,7 +170,7 @@ class Provider extends ToolProvider\ToolProvider
             //\Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiData);
             $this->getConfig()->getSession()->set(self::LTI_LAUNCH, $ltiData);
 
-            //vd($ltiData);
+            vd($ltiData);
 
             $adapter = new \Lti\Auth\LtiAdapter($this->user, $this->institution);
             $adapter->set('ltiData', $ltiData);
