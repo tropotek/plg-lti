@@ -170,7 +170,7 @@ class Provider extends ToolProvider\ToolProvider
             //\Tk\Session::getInstance()->set(self::LTI_LAUNCH, $ltiData);
             $this->getConfig()->getSession()->set(self::LTI_LAUNCH, $ltiData);
 
-            vd($ltiData);
+            //vd($ltiData);
 
             $adapter = new \Lti\Auth\LtiAdapter($this->user, $this->institution);
             $adapter->set('ltiData', $ltiData);
@@ -187,8 +187,6 @@ class Provider extends ToolProvider\ToolProvider
             }
 
             // Copy the event to avoid propagation issues
-
-
             $sEvent = new \Tk\Event\AuthEvent($adapter);
             $sEvent->replace($event->all());
             $sEvent->setResult($event->getResult());
@@ -243,15 +241,16 @@ class Provider extends ToolProvider\ToolProvider
      */
     function onError()
     {
-        if ($this->e) {
-            vdd($this->e->__toString());
-        }
+        vd($this->getConfig()->getSession()->get(self::LTI_LAUNCH));
+//        if ($this->e) {
+//            vdd($this->e->__toString());
+//        }
         vd('LTI: onError', $this->reason, $this->message);
         return true;        // Stops redirect back to app, in-case you want to show an error messages locally
     }
 
 
-    /*
+    /* Blackboard
 Array[34]
 (
   [tool_consumer_info_product_family_code] => Blackboard Learn
@@ -288,6 +287,51 @@ Array[34]
   [context_label] => VOCE10001_2014_SM5
   [launch_presentation_document_target] => window
   [ext_launch_presentation_css_url] => https://sandpit.lms.unimelb.edu.au/common/shared.css,https://sandpit.lms.unimelb.edu.au/branding/themes/unimelb-201410-08/theme.css,https://sandpit.lms.unimelb.edu.au/branding/colorpalettes/unimelb-201404.08/generated/colorpalette.generated.modern.css
+
+)
+    */
+    /* Canvas
+Array[39]
+(
+  [oauth_consumer_key] => dev_tk2uni
+  [oauth_signature_method] => HMAC-SHA1
+  [oauth_timestamp] => 1554852893
+  [oauth_nonce] => eJNKuzDZtG1S5IRVgbHlbv4SLMegwxXp3Pr01cERq0
+  [oauth_version] => 1.0
+  [context_id] => e77e815cb63ae689dbea461c6c08b6351987fe87
+  [context_label] => EarlyPlaypenmifsudm
+  [context_title] => EarlyPlaypenmifsudm
+  [custom_canvas_api_domain] => unimelb-demo.instructure.com
+  [custom_canvas_course_id] => 512
+  [custom_canvas_enrollment_state] => active
+  [custom_canvas_user_id] => 3474
+  [custom_canvas_user_login_id] => mifsudm
+  [custom_canvas_workflow_state] => claimed
+  [ext_roles] => urn:lti:instrole:ims/lis/Instructor,urn:lti:instrole:ims/lis/Student,urn:lti:role:ims/lis/Instructor,urn:lti:sysrole:ims/lis/User
+  [launch_presentation_document_target] => iframe
+  [launch_presentation_locale] => en-AU
+  [launch_presentation_return_url] => https://unimelb-demo.instructure.com/courses/512/external_content/success/external_tool_redirect
+  [lis_course_offering_sourcedid] => PPEarlymifsudm
+  [lis_person_contact_email_primary] => mifsudm@unimelb.edu.au
+  [lis_person_name_family] => Mifsud
+  [lis_person_name_full] => Mick Mifsud
+  [lis_person_name_given] => Mick
+  [lis_person_sourcedid] => 70038
+  [lti_message_type] => basic-lti-launch-request
+  [lti_version] => LTI-1p0
+  [oauth_callback] => about:blank
+  [resource_link_id] => b0f26bb168b11bbdfac16d3c22c3415277c0d287
+  [resource_link_title] => tk2uni [Dev]
+  [roles] => Instructor
+  [tool_consumer_info_product_family_code] => canvas
+  [tool_consumer_info_version] => cloud
+  [tool_consumer_instance_contact_email] => notifications@instructure.com
+  [tool_consumer_instance_guid] => ARzjzfMrSX3XawfM0DJyl2Rue5DDE1xuTmM96AE7:canvas-lms
+  [tool_consumer_instance_name] => University of Melbourne [DEMO Instance]
+  [user_id] => ca28e6b10d2206877b74863b1a1fda178785a7e7
+  [user_image] => https://unimelb-demo.instructure.com/images/thumbnails/104758/4qmlz454Gsc9MXg38o7uF26xUMJDSAKNJlRgGNCZ
+  [oauth_signature] => aiGn3jds1PvRsLybobmUvvJOWEs=
+  [custom_tc_profile_url] =>
 
 )
     */

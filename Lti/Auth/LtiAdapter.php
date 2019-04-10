@@ -22,15 +22,6 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
      */
     protected $institution = null;
 
-    /**
-     * @var null|\Uni\Db\UserIface
-     */
-    protected  $user = null;
-
-    /**
-     * @var null|\Uni\Db\SubjectIface
-     */
-    protected $subject = null;
 
 
 
@@ -43,6 +34,9 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
     {
         parent::__construct();
         $this->set('username', $ltiUser->email);
+        $settings = $ltiUser->getResourceLink()->getSettings();
+        if (!empty($settings['custom_canvas_user_login_id']))
+            $this->set('username', $settings['custom_canvas_user_login_id']);
         $this->ltiUser = $ltiUser;
         $this->institution = $institution;
     }
@@ -61,42 +55,6 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
     public function getInstitution()
     {
         return $this->institution;
-    }
-
-    /**
-     * @return null|\Uni\Db\UserIface
-     */
-    public function getUser()
-    {
-        return $this->user;
-    }
-
-    /**
-     * @param null|\Uni\Db\UserIface $user
-     * @return LtiAdapter
-     */
-    public function setUser($user)
-    {
-        $this->user = $user;
-        return $this;
-    }
-
-    /**
-     * @return null|\Uni\Db\SubjectIface
-     */
-    public function getSubject()
-    {
-        return $this->subject;
-    }
-
-    /**
-     * @param null|\Uni\Db\SubjectIface $subject
-     * @return LtiAdapter
-     */
-    public function setSubject($subject)
-    {
-        $this->subject = $subject;
-        return $this;
     }
 
 

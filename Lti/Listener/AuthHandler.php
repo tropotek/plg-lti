@@ -31,7 +31,7 @@ class AuthHandler implements Subscriber
         $ltiData = $adapter->get('ltiData');
         if (!$ltiData) return;
         
-        vd($ltiData);
+        //vd($ltiData);
 
         // Gather user details
         $role = 'student';
@@ -46,8 +46,24 @@ class AuthHandler implements Subscriber
             'email' => $adapter->getLtiUser()->email,
             'role' => $role,
             'name' => $adapter->getLtiUser()->fullname,
-            'active' => true
+            'active' => true,
+            'canvasUserId' => '',
+            'nameFirst' => '',
+            'nameLast' => '',
+            'image' => '',
         );
+
+        if (!empty($ltiData['custom_canvas_user_login_id']))
+            $userData['username'] = $ltiData['custom_canvas_user_login_id'];
+        if (!empty($ltiData['custom_canvas_user_id']))
+            $userData['canvasUserId'] = $ltiData['custom_canvas_user_id'];
+        if (!empty($ltiData['lis_person_name_given']))
+            $userData['nameFirst'] = $ltiData['lis_person_name_given'];
+        if (!empty($ltiData['lis_person_name_family']))
+            $userData['nameLast'] = $ltiData['lis_person_name_family'];
+        if (!empty($ltiData['user_image']))
+            $userData['image'] = $ltiData['user_image'];
+
         $adapter->set('userData', $userData);
 
         // Find a valid subject object if available
@@ -92,11 +108,9 @@ class AuthHandler implements Subscriber
 
         // TODO: handle this redirect in the app if requred
         $ltiSess = \Lti\Provider::getLtiSession();
-
         if (!empty($ltiSess['launch_presentation_return_url'])) {
             $event->setRedirect(\Tk\Uri::create($ltiSess['launch_presentation_return_url']));
         }
-
         // Clear the LTI session data
         \Lti\Provider::clearLtiSession();
     }
@@ -127,7 +141,7 @@ class AuthHandler implements Subscriber
     {
         return array(
             AuthEvents::LOGIN => array('onLogin', -10), // Must run before app AuthHandler
-            AuthEvents::LOGOUT => array('onLogout', -10)
+            AuthEvents::LOGOUT => array('onLogout', 100)
         );
     }
 
