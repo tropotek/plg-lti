@@ -39,7 +39,11 @@ class AuthHandler implements Subscriber
             $role = 'staff';
         }
 
+        // try to determin the users name
         list($username, $domain) = explode('@', $adapter->getLtiUser()->email);
+        if (!empty($ltiData['custom_canvas_user_login_id']))
+            $username = $ltiData['custom_canvas_user_login_id'];
+
         $userData = array(
             'institutionId' => $adapter->getInstitution()->getId(),
             'username' => $username,
@@ -53,8 +57,6 @@ class AuthHandler implements Subscriber
             'image' => '',
         );
 
-        if (!empty($ltiData['custom_canvas_user_login_id']))
-            $userData['username'] = $ltiData['custom_canvas_user_login_id'];
         if (!empty($ltiData['custom_canvas_user_id']))
             $userData['canvasUserId'] = $ltiData['custom_canvas_user_id'];
         if (!empty($ltiData['lis_person_name_given']))
