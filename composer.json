@@ -9,10 +9,10 @@
         "lti"
     ],
     "homepage": "http://www.tropotek.com/",
-    "time": "2018-09-11",
+    "time": "2019-05-06",
     "access": "institution",
     "license": "MIT",
-    "version": "2.0.22",
+    "version": "2.0.38",
     "authors":  [
          {
             "name": "Michael Mifsud",
