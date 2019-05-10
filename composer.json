@@ -8,11 +8,10 @@
         "EMS III",
         "lti"
     ],
-    "homepage": "http://www.tropotek.com/",
-    "time": "2018-09-11",
-    "access": "institution",
+    "time": "2019-04-09",
     "license": "MIT",
-    "version": "2.0.22",
+    "version": "3.0.0",
+    "access": "institution",
     "authors":  [
          {
             "name": "Michael Mifsud",
@@ -24,15 +23,12 @@
             "Lti\\": ""
         }
     },
+    "require":  {
+        "imsglobal/lti": "~3.0"
+    },
     "extra":  {
         "branch-alias":  {
-            "dev-master": "2.0.x-dev"
+            "dev-master": "3.0.x-dev"
         }
-    },
-    "require":  {
-        "ttek/tk-framework": "~2.0",
-        "ttek/tk-uni": "~2.0",
-        "ttek/tk-installers": "~2.0",
-        "imsglobal/lti": "~3.0"
     }
 }
