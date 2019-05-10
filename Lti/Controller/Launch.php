@@ -25,7 +25,7 @@ class Launch extends \Bs\Controller\Iface
      */
     public function doLaunch(Request $request)
     {
-        $this->institution = $this->getConfig()->getInstitutionMapper()->findByDomain($request->getUri()->getHost());
+        $this->institution = $this->getConfig()->getInstitutionMapper()->findByDomain($request->getTkUri()->getHost());
         if ($this->institution) {
             $this->doInsLaunch($request, $this->institution->getHash());
         }
