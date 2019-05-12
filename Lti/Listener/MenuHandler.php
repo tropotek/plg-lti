@@ -2,6 +2,7 @@
 namespace Lti\Listener;
 
 use Tk\Event\Subscriber;
+use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
  * Class StartupHandler
@@ -19,7 +20,7 @@ class MenuHandler implements Subscriber
 
         // Hide the staff/student subject menu
         /** @var \Bs\Controller\Iface $controller */
-        $controller = $event->get('controller');
+        $controller = \Tk\Event\Event::findControllerObject($event);;
         if(method_exists($controller, 'getPage')) {
             $page = $event->get('page');
 
@@ -33,7 +34,7 @@ class MenuHandler implements Subscriber
 
     }
 
-    public function onController(\Tk\Event\ControllerEvent $event)
+    public function onController(\Symfony\Component\HttpKernel\Event\ControllerEvent $event)
     {
         if (!\Lti\Provider::isLti()) return;
 
@@ -55,7 +56,7 @@ class MenuHandler implements Subscriber
     {
         return array(
             \Tk\PageEvents::PAGE_INIT => array('onInit', 0),
-            \Tk\Kernel\KernelEvents::CONTROLLER => array('onController', 0)
+            KernelEvents::CONTROLLER => array('onController', 0)
         );
     }
     
