@@ -34,7 +34,7 @@ class MenuHandler implements Subscriber
 
     }
 
-    public function onController(\Symfony\Component\HttpKernel\Event\ControllerEvent $event)
+    public function onController($event)
     {
         if (!\Lti\Provider::isLti()) return;
 
