@@ -12,13 +12,8 @@ use Lti\Plugin;
  * @see http://www.tropotek.com/
  * @license Copyright 2015 Michael Mifsud
  */
-class InstitutionSettings extends \Uni\Controller\AdminIface
+class InstitutionSettings extends \Uni\Controller\AdminEditIface
 {
-
-    /**
-     * @var Form
-     */
-    protected $form = null;
 
     /**
      * @var \Uni\Db\Institution
@@ -49,32 +44,31 @@ class InstitutionSettings extends \Uni\Controller\AdminIface
     public function doDefault(Request $request)
     {
         $this->institution = $this->getConfig()->getInstitutionMapper()->find($request->get('zoneId'));
-
         $this->data = Plugin::getInstitutionData($this->institution);
 
-        $this->form = $this->getConfig()->createForm('formEdit');
-        $this->form->setRenderer($this->getConfig()->createFormRenderer($this->form));
+        $this->setForm($this->getConfig()->createForm('formEdit'));
+        $this->getForm()->setRenderer($this->getConfig()->createFormRenderer($this->getForm()));
 
-        $this->form->addField(new Field\Checkbox(Plugin::LTI_ENABLE))->addCss('tk-input-toggle')->setLabel('Enable LTI')
+        $this->getForm()->appendField(new Field\Checkbox(Plugin::LTI_ENABLE))->addCss('tk-input-toggle')->setLabel('Enable LTI')
             ->setTabGroup('LTI')->setCheckboxLabel('Enable the LTI launch URL for LMS systems.');
 
         $lurl = \Tk\Uri::create('/lti/'.$this->institution->getHash().'/launch.html');
         if ($this->institution->domain)
             $lurl = \Tk\Uri::create('/lti/launch.html')->setHost($this->institution->domain);
         $lurl->setScheme('https')->toString();
-        $this->form->addField(new Field\Html(Plugin::LTI_URL, $lurl))->setLabel('Launch Url');
+        $this->getForm()->appendField(new Field\Html(Plugin::LTI_URL, $lurl))->setLabel('Launch Url');
         $this->institution->getData()->set(Plugin::LTI_URL, $lurl);
 
-        $this->form->addField(new Field\Input(Plugin::LTI_KEY))->setLabel('LTI Key');
-        $this->form->addField(new Field\Input(Plugin::LTI_SECRET))->setLabel('LTI Secret')
+        $this->getForm()->appendField(new Field\Input(Plugin::LTI_KEY))->setLabel('LTI Key');
+        $this->getForm()->appendField(new Field\Input(Plugin::LTI_SECRET))->setLabel('LTI Secret')
             ->setAttr('placeholder', 'Auto Generate');
         
-        $this->form->addField(new Event\Submit('update', array($this, 'doSubmit')));
-        $this->form->addField(new Event\Submit('save', array($this, 'doSubmit')));
-        $this->form->addField(new Event\LinkButton('cancel', $this->getBackUrl()));
+        $this->getForm()->appendField(new Event\Submit('update', array($this, 'doSubmit')));
+        $this->getForm()->appendField(new Event\Submit('save', array($this, 'doSubmit')));
+        $this->getForm()->appendField(new Event\LinkButton('cancel', $this->getBackUrl()));
 
-        $this->form->load($this->data->toArray());
-        $this->form->execute();
+        $this->getForm()->load($this->data->toArray());
+        $this->getForm()->execute();
 
     }
 
@@ -105,7 +99,7 @@ class InstitutionSettings extends \Uni\Controller\AdminIface
             }
         }
 
-        if ($this->form->hasErrors()) {
+        if ($form->hasErrors()) {
             return;
         }
 
@@ -159,7 +153,7 @@ class InstitutionSettings extends \Uni\Controller\AdminIface
         $template = parent::show();
         
         // Render the form
-        $template->prependTemplate('form', $this->form->getRenderer()->show());
+        $template->prependTemplate('panel', $this->getForm()->getRenderer()->show());
 
         return $template;
     }
@@ -172,13 +166,9 @@ class InstitutionSettings extends \Uni\Controller\AdminIface
     public function __makeTemplate()
     {
         $xhtml = <<<XHTML
-<div var="content">
-  
-  <div class="tk-panel" data-panel-title="LTI Settings" data-panel-icon="fa fa-cog" var="form">
-    <hr/>
-    <p>Includes support for LTI 1.1 and the unofficial extensions to LTI 1.0, as well as the registration process and services of LTI 2.0.</p>
-  </div>
-  
+<div class="tk-panel" data-panel-title="LTI Settings" data-panel-icon="fa fa-cog" var="panel">
+  <hr/>
+  <p>Includes support for LTI 1.1 and the unofficial extensions to LTI 1.0, as well as the registration process and services of LTI 2.0.</p>
 </div>
 XHTML;
 
