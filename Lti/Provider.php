@@ -163,7 +163,7 @@ class Provider extends ToolProvider\ToolProvider
     {
         try {
             if (!$this->user->email) {
-                throw new \Tk\Exception('User email not found! Cannot log in.');
+                throw new \Tk\Exception('User email not found! Cannot log in. Please check that the lis_person_contact_email_primary fields is enabled in your LMS setup.');
             }
             // Lti Launch data
             $ltiData = array_merge($_GET, $_POST);

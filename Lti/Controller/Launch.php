@@ -45,6 +45,7 @@ class Launch extends \Bs\Controller\Iface
         if (!$this->institution) {
             throw new \Tk\NotFoundHttpException('Institution not found.');
         }
+        $this->getConfig()->getSession()->remove(\Lti\Provider::LTI_LAUNCH);    // reset any existing session data
 
         //if (!$request->has('lti_version') || !$request->has('ext_lms')) {     // Removed because Canvas does not have the ext_lms key
         if (!$request->has('lti_version')) {
