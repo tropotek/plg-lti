@@ -5,8 +5,6 @@ use Tk\Event\Subscriber;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
- * Class StartupHandler
- *
  * @author Michael Mifsud <info@tropotek.com>
  * @see http://www.tropotek.com/
  * @license Copyright 2015 Michael Mifsud
