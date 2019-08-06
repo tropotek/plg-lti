@@ -51,14 +51,18 @@ class AuthHandler implements Subscriber
             'role' => $role,
             'name' => $adapter->getLtiUser()->fullname,
             'active' => true,
-            'canvasUserId' => '',
+            'lmsUserId' => '',
             'nameFirst' => '',
             'nameLast' => '',
             'image' => '',
         );
 
+        if (!empty($ltiData['custom_canvas_enrollment_state']))
+            $userData['lmsEnrollmentState'] = $ltiData['custom_canvas_enrollment_state'];
         if (!empty($ltiData['custom_canvas_user_id']))
-            $userData['canvasUserId'] = $ltiData['custom_canvas_user_id'];
+            $userData['lmsUserId'] = $ltiData['custom_canvas_user_id'];
+        if (!empty($ltiData['user_id']))
+            $userData['lmsUserId'] = $ltiData['user_id'];
         if (!empty($ltiData['lis_person_name_given']))
             $userData['nameFirst'] = $ltiData['lis_person_name_given'];
         if (!empty($ltiData['lis_person_name_family']))
