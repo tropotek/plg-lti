@@ -56,6 +56,7 @@ class Launch extends \Bs\Controller\Iface
         if(Plugin::getInstance()->isActive()) {
             $provider = new \Lti\Provider(Plugin::getLtiDataConnector(), $this->institution, $this->getConfig()->getEventDispatcher());
             $_POST['custom_tc_profile_url'] = '';   // Hack to speed up the launch process as we do not need this url
+            vd($_POST);
             $provider->handleRequest();
             if ($provider->message) {
                 $msg .= $provider->message . '<br/>';
