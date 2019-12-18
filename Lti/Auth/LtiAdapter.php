@@ -81,11 +81,4 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
         return new Result(Result::FAILURE_CREDENTIAL_INVALID, '', $msg);
     }
 
-    /**
-     * @return \App\Config
-     */
-    public function getConfig()
-    {
-        return \App\Config::getInstance();
-    }
 }

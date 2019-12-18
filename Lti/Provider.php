@@ -3,7 +3,9 @@ namespace Lti;
 
 use IMSGlobal\LTI\ToolProvider;
 use IMSGlobal\LTI\ToolProvider\DataConnector\DataConnector;
+use Tk\ConfigTrait;
 use Tk\Event\Dispatcher;
+use Tk\EventDispatcher\EventDispatcher;
 
 /**
  * @author Michael Mifsud <info@tropotek.com>
@@ -12,6 +14,8 @@ use Tk\Event\Dispatcher;
  */
 class Provider extends ToolProvider\ToolProvider
 {
+    use ConfigTrait;
+
     const LTI_LAUNCH = 'lti_launch';
     const LTI_SUBJECT_ID = 'custom_subjectid';
 
@@ -26,7 +30,7 @@ class Provider extends ToolProvider\ToolProvider
     protected $institution = null;
 
     /**
-     * @var Dispatcher
+     * @var EventDispatcher
      */
     protected $dispatcher = null;
 
@@ -41,7 +45,7 @@ class Provider extends ToolProvider\ToolProvider
      *
      * @param DataConnector $dataConnector
      * @param \Uni\Db\InstitutionIface $institution
-     * @param Dispatcher $dispatcher
+     * @param EventDispatcher $dispatcher
      */
     public function __construct(DataConnector $dataConnector, $institution = null, $dispatcher = null)
     {
@@ -77,7 +81,7 @@ class Provider extends ToolProvider\ToolProvider
      */
     public static function isLti()
     {
-        return \Tk\Config::getInstance()->getSession()->has(self::LTI_LAUNCH);
+        return \Uni\Config::getInstance()->getSession()->has(self::LTI_LAUNCH);
     }
 
     /**
@@ -90,7 +94,7 @@ class Provider extends ToolProvider\ToolProvider
     {
         if (!self::$subject && isset($ltiSes[self::LTI_SUBJECT_ID])) {
             $ltiSes = self::getLtiSession();
-            self::$subject = \App\Config::getInstance()->getSubjectMapper()->find($ltiSes[self::LTI_SUBJECT_ID]);
+            self::$subject = \Uni\Config::getInstance()->getSubjectMapper()->find($ltiSes[self::LTI_SUBJECT_ID]);
         }
         return self::$subject;
     }
@@ -120,14 +124,6 @@ class Provider extends ToolProvider\ToolProvider
     public function isLecturer()
     {
         return ($this->hasRole('ContentDeveloper') || $this->hasRole('TeachingAssistant'));
-    }
-
-    /**
-     * @return \App\Config
-     */
-    public function getConfig()
-    {
-        return \App\Config::getInstance();
     }
 
     /**

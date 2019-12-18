@@ -4,6 +4,7 @@ namespace Lti\Listener;
 use Lti\Plugin;
 use Lti\Provider;
 use Tk\Auth\AuthEvents;
+use Tk\ConfigTrait;
 use Tk\Event\AuthEvent;
 use Tk\Event\Subscriber;
 
@@ -15,6 +16,7 @@ use Tk\Event\Subscriber;
  */
 class AuthHandler implements Subscriber
 {
+    use ConfigTrait;
 
     /**
      * @param AuthEvent $event
@@ -148,14 +150,6 @@ class AuthHandler implements Subscriber
             AuthEvents::LOGIN => array('onLogin', -10), // Must run before app AuthHandler
             AuthEvents::LOGOUT => array('onLogout', 100)
         );
-    }
-
-    /**
-     * @return \App\Config
-     */
-    public function getConfig()
-    {
-        return \App\Config::getInstance();
     }
     
 }
