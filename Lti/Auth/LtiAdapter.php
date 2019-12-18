@@ -1,7 +1,6 @@
 <?php
 namespace Lti\Auth;
 
-use Lti\Plugin;
 use Tk\Auth\Result;
 
 

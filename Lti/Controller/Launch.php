@@ -1,9 +1,9 @@
 <?php
 namespace Lti\Controller;
 
-use Tk\Request;
 use Dom\Template;
 use Lti\Plugin;
+use Tk\Request;
 
 /**
  * @author Michael Mifsud <info@tropotek.com>

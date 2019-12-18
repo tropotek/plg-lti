@@ -1,12 +1,11 @@
 <?php
 namespace Lti\Listener;
 
-use Lti\Provider;
 use Lti\Plugin;
-use Tk\Event\Subscriber;
-use Tk\Event\AuthEvent;
+use Lti\Provider;
 use Tk\Auth\AuthEvents;
-
+use Tk\Event\AuthEvent;
+use Tk\Event\Subscriber;
 
 
 /**
