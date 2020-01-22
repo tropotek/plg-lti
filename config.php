@@ -22,3 +22,4 @@ $routes->add('lti-admin-institution-settings', new \Tk\Routing\Route('/admin/lti
 $routes->add('lti-client-institution-settings', new \Tk\Routing\Route('/client/ltiInstitutionSettings.html', 'Lti\Controller\InstitutionSettings::doDefault'));
 
 
+
