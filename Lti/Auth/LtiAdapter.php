@@ -58,7 +58,6 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
 
 
     /**
-     *
      * @return Result
      */
     public function authenticate()
