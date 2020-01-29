@@ -20,6 +20,7 @@ $routes->add('lti-admin-settings', new \Tk\Routing\Route('/admin/ltiSettings.htm
 
 $routes->add('lti-admin-institution-settings', new \Tk\Routing\Route('/admin/ltiInstitutionSettings.html', 'Lti\Controller\InstitutionSettings::doDefault'));
 $routes->add('lti-client-institution-settings', new \Tk\Routing\Route('/client/ltiInstitutionSettings.html', 'Lti\Controller\InstitutionSettings::doDefault'));
+$routes->add('lti-staff-institution-settings', new \Tk\Routing\Route('/staff/ltiInstitutionSettings.html', 'Lti\Controller\InstitutionSettings::doDefault'));
 
 
 
