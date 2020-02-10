@@ -22,8 +22,6 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
     protected $institution = null;
 
 
-
-
     /**
      * LtiAdapter constructor.
      * @param \IMSGlobal\LTI\ToolProvider\User $ltiUser
