@@ -12,6 +12,7 @@ if (!$routes) return;
 $params = array();
 
 // LTI launch
+$routes->add('lti-launch', new \Tk\Routing\Route('/lti/index.html', 'Lti\Controller\Launch::doLaunch', $params));
 $routes->add('lti-launch', new \Tk\Routing\Route('/lti/launch.html', 'Lti\Controller\Launch::doLaunch', $params));
 $routes->add('institution-lti-launch', new \Tk\Routing\Route('/lti/{instHash}/launch.html', 'Lti\Controller\Launch::doInsLaunch', $params));
 

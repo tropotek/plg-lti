@@ -62,11 +62,11 @@ class Plugin extends \Tk\Plugin\Iface
      */
     public static function getLtiDataConnector()
     {
-        if (!self::$dataConnector) {
-            self::$dataConnector = \IMSGlobal\LTI\ToolProvider\DataConnector\DataConnector::getDataConnector(self::$LTI_DB_PREFIX,
-                \Uni\Config::getInstance()->getDb(), 'pdo');
-        }
-        return self::$dataConnector;
+//        if (!self::$dataConnector) {
+//            self::$dataConnector = \IMSGlobal\LTI\ToolProvider\DataConnector\DataConnector::getDataConnector(self::$LTI_DB_PREFIX,
+//                \Uni\Config::getInstance()->getDb(), 'pdo');
+//        }
+//        return self::$dataConnector;
     }
 
     /**
@@ -87,13 +87,13 @@ class Plugin extends \Tk\Plugin\Iface
      */
     public static function getLtiConsumer($institution)
     {
-        $data = self::getInstitutionData($institution);
-        $key = $data->get(self::LTI_CURRENT_KEY);
-        if ($key === '') $key = null;
-        if (!self::$ltiConsumer && $key) {
-            self::$ltiConsumer = new \IMSGlobal\LTI\ToolProvider\ToolConsumer($key, self::getLtiDataConnector());
-        }
-        return self::$ltiConsumer;
+//        $data = self::getInstitutionData($institution);
+//        $key = $data->get(self::LTI_CURRENT_KEY);
+//        if ($key === '') $key = null;
+//        if (!self::$ltiConsumer && $key) {
+//            self::$ltiConsumer = new \IMSGlobal\LTI\ToolProvider\ToolConsumer($key, self::getLtiDataConnector());
+//        }
+//        return self::$ltiConsumer;
     }
 
 
@@ -107,13 +107,13 @@ class Plugin extends \Tk\Plugin\Iface
      */
     public static function ltiKeyExists($consumer_key256, $ignoreId = 0)
     {
-        $db = \Uni\Config::getInstance()->getDb();
-        $sql = sprintf('SELECT * FROM %s WHERE consumer_key256 = %s',
-            $db->quoteParameter(self::$LTI_DB_PREFIX.'lti2_consumer'), $db->quote($consumer_key256));
-        if ($ignoreId) {
-            $sql .= sprintf(' AND consumer_pk != %s ', (int)$ignoreId);
-        }
-        return ($db->query($sql)->rowCount() > 0);
+//        $db = \Uni\Config::getInstance()->getDb();
+//        $sql = sprintf('SELECT * FROM %s WHERE consumer_key256 = %s',
+//            $db->quoteParameter(self::$LTI_DB_PREFIX.'lti2_consumer'), $db->quote($consumer_key256));
+//        if ($ignoreId) {
+//            $sql .= sprintf(' AND consumer_pk != %s ', (int)$ignoreId);
+//        }
+//        return ($db->query($sql)->rowCount() > 0);
     }
 
     /**

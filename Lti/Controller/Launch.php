@@ -39,37 +39,39 @@ class Launch extends \Bs\Controller\Iface
      */
     public function doInsLaunch(Request $request, $instHash)
     {
+        vd($request->all());
         if (!$this->institution)
             $this->institution = $this->getConfig()->getInstitutionMapper()->findByHash($instHash);
 
         if (!$this->institution) {
             throw new \Tk\NotFoundHttpException('Institution not found.');
         }
-        $this->getConfig()->getSession()->remove(\Lti\Provider::LTI_LAUNCH);    // reset any existing session data
 
-        //if (!$request->has('lti_version') || !$request->has('ext_lms')) {     // Removed because Canvas does not have the ext_lms key
-        if (!$request->has('lti_version')) {
-            return $this->show();
-        }
-
-        $msg = '';
-        if(Plugin::getInstance()->isActive()) {
-            $provider = new \Lti\Provider(Plugin::getLtiDataConnector(), $this->institution, $this->getConfig()->getEventDispatcher());
-            $_POST['custom_tc_profile_url'] = '';   // Hack to speed up the launch process as we do not need this url
-            vd($_POST);
-            $provider->handleRequest();
-            if ($provider->message) {
-                $msg .= $provider->message . '<br/>';
-            }
-            if ($provider->reason) {
-                $msg .= $provider->reason . '<br/>';
-            }
-            $this->getConfig()->set('lti.provider', $provider);
-        } else {
-            $msg = 'LTI is not enabled for this Institution';
-        }
-
-        $this->getTemplate()->insertHtml('message', trim($msg, '<br/>'));
+//        $this->getConfig()->getSession()->remove(\Lti\Provider::LTI_LAUNCH);    // reset any existing session data
+//
+//        //if (!$request->has('lti_version') || !$request->has('ext_lms')) {     // Removed because Canvas does not have the ext_lms key
+//        if (!$request->has('lti_version')) {
+//            return $this->show();
+//        }
+//
+//        $msg = '';
+//        if(Plugin::getInstance()->isActive()) {
+//            $provider = new \Lti\Provider(Plugin::getLtiDataConnector(), $this->institution, $this->getConfig()->getEventDispatcher());
+//            $_POST['custom_tc_profile_url'] = '';   // Hack to speed up the launch process as we do not need this url
+//            vd($_POST);
+//            $provider->handleRequest();
+//            if ($provider->message) {
+//                $msg .= $provider->message . '<br/>';
+//            }
+//            if ($provider->reason) {
+//                $msg .= $provider->reason . '<br/>';
+//            }
+//            $this->getConfig()->set('lti.provider', $provider);
+//        } else {
+//            $msg = 'LTI is not enabled for this Institution';
+//        }
+//
+//        $this->getTemplate()->insertHtml('message', trim($msg, '<br/>'));
     }
 
     /**

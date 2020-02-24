@@ -108,30 +108,30 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
 
         $consumer = Plugin::getLtiConsumer($this->institution);
         if ($this->data->get(Plugin::LTI_ENABLE)) {
-            if (!$consumer) {
-                $consumer = new \IMSGlobal\LTI\ToolProvider\ToolConsumer(null, Plugin::getLtiDataConnector());
-            }
-            $consumer->setKey($this->data->get(Plugin::LTI_KEY));
-            if ($this->data->get(Plugin::LTI_SECRET)) {
-                $consumer->secret = $this->data->get(Plugin::LTI_SECRET);
-            }
-            $consumer->enabled = true;
-            $consumer->name = $this->institution->name;
-            $consumer->save();
+//            if (!$consumer) {
+//                $consumer = new \IMSGlobal\LTI\ToolProvider\ToolConsumer(null, Plugin::getLtiDataConnector());
+//            }
+//            $consumer->setKey($this->data->get(Plugin::LTI_KEY));
+//            if ($this->data->get(Plugin::LTI_SECRET)) {
+//                $consumer->secret = $this->data->get(Plugin::LTI_SECRET);
+//            }
+//            $consumer->enabled = true;
+//            $consumer->name = $this->institution->name;
+//            $consumer->save();
 
-            $this->data->set(Plugin::LTI_CURRENT_KEY, $consumer->getKey());
-            $this->data->set(Plugin::LTI_CURRENT_ID, $consumer->getRecordId());
-            $this->data->set(Plugin::LTI_SECRET, $consumer->secret);
+//            $this->data->set(Plugin::LTI_CURRENT_KEY, $consumer->getKey());
+//            $this->data->set(Plugin::LTI_CURRENT_ID, $consumer->getRecordId());
+//            $this->data->set(Plugin::LTI_SECRET, $consumer->secret);
             $url = \Tk\Uri::create('/lti/'.$this->institution->getHash().'/launch.html');
             if ($this->institution->domain)
                 $url = \Tk\Uri::create('http://'.$this->institution->domain.'/lti/launch.html');
             $this->data->set(Plugin::LTI_URL, $url->setScheme('https')->toString());
 
         } else {
-            if ($consumer) {
-                $consumer->enabled = false;
-                $consumer->save();
-            }
+//            if ($consumer) {
+//                $consumer->enabled = false;
+//                $consumer->save();
+//            }
         }
 
         $this->data->save();
