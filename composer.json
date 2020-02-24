@@ -21,8 +21,14 @@
             "Lti\\": ""
         }
     },
-    "require":  {
-        "imsglobal/lti": "~3.0"
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/IMSGlobal/lti-1-3-php-library"
+        }
+    ],
+    "require": {
+        "imsglobal/lti-1p3-tool": "dev-master"
     },
     "extra":  {
         "branch-alias":  {

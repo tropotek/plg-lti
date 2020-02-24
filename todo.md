@@ -1,20 +1,20 @@
 #TODO
 
-## How to get Student/Staff Number
 
-What we could do is check that the LDAP plugin is installed and enabled,
-if so then when the staff or student logs in for the first time prompt
-them via dialog or similar to either log in using their uni password 
-(not my preferred option but is automatic) 
+## Upgrade to LTI v1.3
 
-Orr alternatively we could add the required data fields to the dialog 
-and get the user to enter them manually like mobile number, student number, etc...
+Use [https://github.com/IMSGlobal/lti-1-3-php-library] 
 
-This dialog could be part of the system and pops up automatically when data is 
-missing from a users account. It should be built as a stand alone module that 
-plugins could access.
-
-
-
-
-
+Add the following to your composer.json file
+```
+"repositories": [
+    {
+        "type": "vcs",
+        "url": "https://github.com/IMSGlobal/lti-1-3-php-library"
+    }
+],
+"require": {
+    "imsglobal/lti-1p3-tool": "dev-master"
+}
+```
+Run composer install or composer update In your code, you will now be able to use classes in the \IMSGlobal\LTI namespace to access the library.
