@@ -92,7 +92,7 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
     }
 
     /**
-     *
+     * @throws \Exception
      */
     public function extractData()
     {
@@ -101,7 +101,7 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
         $ltiData = $this->getLaunch()->get_launch_data();
         if (!$ltiData) return;
 
-        // Gather user details
+        // Gather user data
         $type = 'student';
         if ($this->isStaff($ltiData)) {
             $type = 'staff';
@@ -115,9 +115,7 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
             'nameFirst' => '',
             'nameLast' => '',
             'name' => '',
-
-            'lmsUserId' => '',
-            'image' => '',
+            'image' => ''       // TODO: Check the canvas LTI launchData
         );
 
         if (!empty($ltiData['given_name']))
@@ -127,42 +125,47 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
         if (!empty($ltiData['name']))
             $userData['name'] = $ltiData['name'];
 
-        // TODO: See if any of there are still viable.
-//        if (!empty($ltiData['custom_canvas_enrollment_state']))
-//            $userData['lmsEnrollmentState'] = $ltiData['custom_canvas_enrollment_state'];
-//        if (!empty($ltiData['custom_canvas_user_id']))
-//            $userData['lmsUserId'] = $ltiData['custom_canvas_user_id'];
-//        if (!empty($ltiData['user_id']))
-//            $userData['lmsUserId'] = $ltiData['user_id'];
-//        if (!empty($ltiData['user_image']))
-//            $userData['image'] = $ltiData['user_image'];
-
         $this->set('userData', $userData);
 
-        // Find a valid subject object if available
-        $subjectCode = '';
-        if (!empty($ltiData['https://purl.imsglobal.org/spec/lti/claim/lis']['course_section_sourcedid']))
-            $subjectCode = $ltiData['https://purl.imsglobal.org/spec/lti/claim/lis']['course_section_sourcedid'];
-        if ($subjectCode) {
-            //throw new \Tk\Exception('Subject not available, Please contact the LMS administrator.');
-            $subjectCode = preg_replace('/[^a-z0-9_-]/i', '_', $subjectCode);
-            $subject = null;
 
+        // Gather course/subject data
+        $subjectCode = '';
+        $courseId = 0;
+        $subjectId = 0;
+        if (!empty($ltiData['https://purl.imsglobal.org/spec/lti/claim/lis']['course_section_sourcedid'])) {
+            $subjectCode = $ltiData['https://purl.imsglobal.org/spec/lti/claim/lis']['course_section_sourcedid'];
+            $subjectCode = preg_replace('/[^a-z0-9_-]/i', '_', $subjectCode);
+            $subject = $this->getConfig()->getSubjectMapper()->findByCode($subjectCode, $this->getInstitution()->getId());
+            if ($subject) {
+                $subjectId = $subject->getId();
+                $courseId = $subject->getCourseId();
+            }
+        }
+        if (!empty($ltiData['https://purl.imsglobal.org/spec/lti/claim/custom']['courseId'])) {
+            $courseId = (int)$ltiData['https://purl.imsglobal.org/spec/lti/claim/custom']['courseId'];
+            $course = $this->getConfig()->getCourseMapper()->findFiltered(
+                array('id' => $courseId, 'institutionId' => $this->getInstitution()->getId())
+            )->current();
+            if (!$course) $courseId = 0;
+        }
+        if (!empty($ltiData['https://purl.imsglobal.org/spec/lti/claim/custom']['subjectId'])) {
+            $subjectId = (int)$ltiData['https://purl.imsglobal.org/spec/lti/claim/custom']['subjectId'];
+            /** @var \Uni\Db\Subject $subject */
+            $subject = $this->getConfig()->getSubjectMapper()->findFiltered(
+                array('id' => $subjectId, 'institutionId' => $this->getInstitution()->getId())
+            )->current();
+            if ($subject) {
+                $subjectId = $subject->getId();
+                $subjectCode = $subject->getCode();
+                $courseId = $subject->getCourseId();
+            }
         }
 
-//        $subjectCode = preg_replace('/[^a-z0-9_-]/i', '_', $ltiData['context_label']);
-//        $subject = null;
-
-        // TODO: Force subject selection via passed param in the LTI launch url:  {launchUrl}?custom_subjectId=3
-//        if (!empty($ltiData['subjectId']) && empty($ltiData[Plugin::LTI_SUBJECT_ID])) {
-//            $ltiData[Plugin::LTI_SUBJECT_ID] = (int)$ltiData['subjectId'];
-//        }
-
         $subjectData = array(
-            // TODO:
-            //'id' => !empty($ltiData[Plugin::LTI_SUBJECT_ID]) ? (int)$ltiData[Plugin::LTI_SUBJECT_ID] : 0,
+            'id' => $subjectId,         // deprecated (use subjectId)
+            'subjectId' => $subjectId,
             'institutionId' => $this->getInstitution()->getId(),
-            'courseId' => 0,        // TODO: What will we do here???????
+            'courseId' => $courseId,
             'name' => $ltiData['https://purl.imsglobal.org/spec/lti/claim/context']['title'],
             'code' => $subjectCode,
             'email' => (!empty($ltiData['email'])) ? $ltiData['email'] : \Tk\Config::getInstance()->get('site.email'),
@@ -172,12 +175,14 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
             'dateEnd' => \Tk\Date::create()->add(new \DateInterval('P1Y')),
             'active' => true
         );
+
         $this->set('subjectData', $subjectData);
-
-
     }
 
-
+    /**
+     * @param array $ltiData
+     * @return bool
+     */
     private function isStaff(array $ltiData)
     {
         foreach ($ltiData[self::LD_ROLES] as $role) {
@@ -193,3 +198,96 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
         return false;
     }
 }
+/* Moodle Example Launch Data
+Array[23]
+(
+  [nonce] => nonce-5e56d65bf3c839.63563322
+  [iat] => 1582749276
+  [exp] => 1582749336
+  [iss] => https://mifsudm.unimelb.edu.au/Test/moodle
+  [aud] => v23kN0NgpIoRgEW
+  [https://purl.imsglobal.org/spec/lti/claim/deployment_id] => 4
+  [https://purl.imsglobal.org/spec/lti/claim/target_link_uri] => https://mifsudm.unimelb.edu.au/Projects/tkuni
+  [sub] => 4
+  [https://purl.imsglobal.org/spec/lti/claim/lis] => Array[2]
+    (
+      [person_sourcedid] =>
+      [course_section_sourcedid] => 00001
+
+    )
+  [https://purl.imsglobal.org/spec/lti/claim/roles] => Array[1]
+    (
+      [0] => http://purl.imsglobal.org/vocab/lis/v2/membership#Learner
+
+    )
+  [https://purl.imsglobal.org/spec/lti/claim/context] => Array[4]
+    (
+      [id] => 2
+      [label] => LTI Course
+      [title] => 2019 LTI Test Course
+      [type] => Array[1]
+        (
+          [0] => CourseSection
+
+        )
+
+    )
+  [https://purl.imsglobal.org/spec/lti/claim/resource_link] => Array[2]
+    (
+      [title] => TkUni LTI v1.3
+      [id] => 4
+
+    )
+  [https://purl.imsglobal.org/spec/lti-bos/claim/basicoutcomesservice] => Array[2]
+    (
+      [lis_result_sourcedid] => {"data":{"instanceid":"4","userid":"4","typeid":"4","launchid":915842986},"hash":"3a07da1c48c094675f3f6dc838ad708af78fe442cc9d6069da9e763776cd2a2d"}
+      [lis_outcome_service_url] => https://mifsudm.unimelb.edu.au/Test/moodle/mod/lti/service.php
+
+    )
+  [given_name] => Student
+  [family_name] => One
+  [name] => Student One
+  [https://purl.imsglobal.org/spec/lti/claim/ext] => Array[2]
+    (
+      [user_username] => studentone
+      [lms] => moodle-2
+
+    )
+  [email] => studentone@252s-dev.vet.unimelb.edu.au
+  [https://purl.imsglobal.org/spec/lti/claim/launch_presentation] => Array[3]
+    (
+      [locale] => en
+      [document_target] => iframe
+      [return_url] => https://mifsudm.unimelb.edu.au/Test/moodle/mod/lti/return.php?course=2&launch_container=3&instanceid=4&sesskey=iahshVmH5z
+
+    )
+  [https://purl.imsglobal.org/spec/lti/claim/tool_platform] => Array[5]
+    (
+      [family_code] => moodle
+      [version] => 2019052001
+      [guid] => mifsudm.unimelb.edu.au
+      [name] => 252s-dev
+      [description] => 252s-dev Test LMS
+
+    )
+  [https://purl.imsglobal.org/spec/lti/claim/version] => 1.3.0
+  [https://purl.imsglobal.org/spec/lti/claim/message_type] => LtiResourceLinkRequest
+  [https://purl.imsglobal.org/spec/lti/claim/custom] => Array[12]
+    (
+      [courseparam1] => 123456
+      [courseParam1] => 123456
+      [courseparam2] => this another param
+      [courseParam2] => this another param
+      [courseid] => 1
+      [courseId] => 1
+      [subjectid] => 123
+      [subjectId] => 123
+      [testparam1] => 12345
+      [testParam1] => 12345
+      [testparam2] => this is a very long (param with specialChars)
+      [testParam2] => this is a very long (param with specialChars)
+
+    )
+
+)
+*/
