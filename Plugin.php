@@ -74,16 +74,16 @@ class Plugin extends \Tk\Plugin\Iface
      *
      * @param \Uni\Db\InstitutionIface $institution
      * @return bool
-     * @throws \Exception
      */
     public static function isEnabled($institution)
     {
         $plugin = self::getInstance();
-        $db = $plugin->getConfig()->getDb();
-        $data = $plugin->getInstitutionData($institution);
-        if ($data && $data->has(self::LTI_ENABLE)) {
-            return true;
-        }
+        try {
+            $data = $plugin->getInstitutionData($institution);
+            if ($data && $data->has(self::LTI_ENABLE)) {
+                return true;
+            }
+        } catch (\Exception $e) { \Tk\Log::error($e->__toString()); }
         return false;
     }
 
