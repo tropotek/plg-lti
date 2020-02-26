@@ -36,7 +36,6 @@ class Launch extends \Bs\Controller\Iface
     /**
      * @param Request $request
      * @param $instHash
-     * @return \Dom\Template|Template|string
      * @throws \Exception
      */
     public function doInsDefault(Request $request, $instHash)
@@ -51,16 +50,12 @@ class Launch extends \Bs\Controller\Iface
             throw new \Tk\NotFoundHttpException('Institution not found.');
         }
 
-
         try {
-
             $launch = LTI\LTI_Message_Launch::new(new \Lti\Database($this->institution))->validate();
             if ($launch->is_deep_link_launch()) {
-                // TODO: ?????
                 vd('TODO: Launch is a deep link???');
             }
             $this->onLaunch($launch);
-
         } catch (\Exception $e) {
             \Tk\Log::error($e->__toString());
             $this->message = $e->getMessage();
@@ -97,6 +92,7 @@ class Launch extends \Bs\Controller\Iface
 
         // Save Lti Launch data
         $this->getConfig()->getSession()->set(Plugin::LTI_LAUNCH, $ltiData);
+        $this->getConfig()->getSession()->set('isLti', true);
         $adapter = new \Lti\Auth\LtiAdapter($launch, $this->institution);
 
         $event = new \Tk\Event\AuthEvent($adapter);

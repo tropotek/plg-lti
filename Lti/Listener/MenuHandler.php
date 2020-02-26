@@ -2,6 +2,7 @@
 namespace Lti\Listener;
 
 use Symfony\Component\HttpKernel\KernelEvents;
+use Tk\ConfigTrait;
 use Tk\Event\Subscriber;
 
 /**
@@ -11,10 +12,11 @@ use Tk\Event\Subscriber;
  */
 class MenuHandler implements Subscriber
 {
+    use ConfigTrait;
 
     public function onInit(\Tk\Event\Event $event)
     {
-        if (!\Lti\Provider::isLti()) return;
+        if (!$this->getSession()->get('isLti')) return;
 
         // Hide the staff/student subject menu
         /** @var \Bs\Controller\Iface $controller */
@@ -34,7 +36,7 @@ class MenuHandler implements Subscriber
 
     public function onController($event)
     {
-        if (!\Lti\Provider::isLti()) return;
+        if (!$this->getSession()->get('isLti')) return;
 
 //        /** @var \Bs\Controller\Iface $controller */
 //        $controller = $event->getControllerObject();

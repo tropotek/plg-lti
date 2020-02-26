@@ -1,9 +1,7 @@
 <?php
 namespace Lti\Listener;
 
-use IMSGlobal\LTI\LTI_Message_Launch;
 use Lti\Plugin;
-use Lti\Provider;
 use Tk\Auth\AuthEvents;
 use Tk\ConfigTrait;
 use Tk\Event\AuthEvent;
@@ -119,13 +117,13 @@ class AuthHandler implements Subscriber
 //        $subject = null;
 
         // TODO: Force subject selection via passed param in the LTI launch url:  {launchUrl}?custom_subjectId=3
-//        if (!empty($ltiData['subjectId']) && empty($ltiData[Provider::LTI_SUBJECT_ID])) {
-//            $ltiData[Provider::LTI_SUBJECT_ID] = (int)$ltiData['subjectId'];
+//        if (!empty($ltiData['subjectId']) && empty($ltiData[Plugin::LTI_SUBJECT_ID])) {
+//            $ltiData[Plugin::LTI_SUBJECT_ID] = (int)$ltiData['subjectId'];
 //        }
 
         $subjectData = array(
             // TODO:
-            //'id' => !empty($ltiData[Provider::LTI_SUBJECT_ID]) ? (int)$ltiData[Provider::LTI_SUBJECT_ID] : 0,
+            //'id' => !empty($ltiData[Plugin::LTI_SUBJECT_ID]) ? (int)$ltiData[Plugin::LTI_SUBJECT_ID] : 0,
             'institutionId' => $adapter->getInstitution()->getId(),
             'courseId' => 0,        // TODO: What will we do here???????
             'name' => $ltiData['https://purl.imsglobal.org/spec/lti/claim/context']['title'],
