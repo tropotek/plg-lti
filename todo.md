@@ -36,7 +36,7 @@ Moodle Test #1:
 
 ```json
 {
-    "https://mifsudm.unimelb.edu.au/Test/moodle" : { // This will usually look something like 'http://example.com'
+    "https://mifsudm.unimelb.edu.au/Test/moodle" : { // `This will usually look something like 'http://example.com'`
         "client_id" : "v23kN0NgpIoRgEW", // This is the id received in the 'aud' during a launch
         "auth_login_url" : "https://mifsudm.unimelb.edu.au/Test/moodle/mod/lti/auth.php", // The platform's OIDC login endpoint
         "auth_token_url" : "https://mifsudm.unimelb.edu.au/Test/moodle/mod/lti/token.php", // The platform's service authorization endpoint
