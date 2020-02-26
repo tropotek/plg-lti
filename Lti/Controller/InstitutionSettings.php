@@ -21,7 +21,12 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
     protected $institution = null;
 
     /**
-     * @var \Tk\Db\Data|null
+     * @var \Lti\Plugin
+     */
+    protected $plugin = null;
+
+    /**
+     * @var \Tk\Db\Data
      */
     protected $data = null;
 
@@ -31,38 +36,43 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
      */
     public function __construct()
     {
-        $this->setPageTitle('LTI Plugin - Institution Settings');
+        $this->setPageTitle('LTI v1.3 Plugin - Institution Settings');
+        $this->plugin = Plugin::getInstance();
+    }
 
+    /**
+     * @return Plugin
+     */
+    public function getPlugin()
+    {
+        return $this->plugin;
     }
 
     /**
      * @param Request $request
      * @return void
-     * @throws Form\Exception
      * @throws \Exception
      */
     public function doDefault(Request $request)
     {
         $this->institution = $this->getConfig()->getInstitutionMapper()->find($request->get('zoneId'));
-        $this->data = Plugin::getInstitutionData($this->institution);
+        $this->data = $this->getPlugin()->getInstitutionData($this->institution);
 
         $this->setForm($this->getConfig()->createForm('formEdit'));
         $this->getForm()->setRenderer($this->getConfig()->createFormRenderer($this->getForm()));
 
         $this->getForm()->appendField(new Field\Checkbox(Plugin::LTI_ENABLE))->addCss('tk-input-toggle')->setLabel('Enable LTI')
-            ->setTabGroup('LTI')->setCheckboxLabel('Enable the LTI launch URL for LMS systems.');
+            ->setCheckboxLabel('Enable the LTI launch URL for LMS systems.');
 
-        $lurl = \Tk\Uri::create('/lti/'.$this->institution->getHash().'/launch.html');
-        if ($this->institution->domain)
-            $lurl = \Tk\Uri::create('/lti/launch.html')->setHost($this->institution->domain);
-        $lurl->setScheme('https')->toString();
-        $this->getForm()->appendField(new Field\Html(Plugin::LTI_URL, $lurl))->setLabel('Launch Url');
-        $this->institution->getData()->set(Plugin::LTI_URL, $lurl);
 
-        $this->getForm()->appendField(new Field\Input(Plugin::LTI_KEY))->setLabel('LTI Key');
-        $this->getForm()->appendField(new Field\Input(Plugin::LTI_SECRET))->setLabel('LTI Secret')
-            ->setAttr('placeholder', 'Auto Generate');
-        
+        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_PLATFORMID))->setLabel('Platform ID');
+        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_CLIENTID))->setLabel('Client ID');
+        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_AUTHLOGINURL))->setLabel('Auth Request URL');
+        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_AUTHTOKENURL))->setLabel('Access Token URL');
+        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_KEYSETURL))->setLabel('Public Key Set URL');
+        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_DEPLOYMENTID))->setLabel('Deployment ID');
+
+
         $this->getForm()->appendField(new Event\Submit('update', array($this, 'doSubmit')));
         $this->getForm()->appendField(new Event\Submit('save', array($this, 'doSubmit')));
         $this->getForm()->appendField(new Event\LinkButton('cancel', $this->getBackUrl()));
@@ -82,61 +92,23 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
         $values = $form->getValues();
         $this->data->replace($values);
 
-        // validate LTI consumer key
-        $lid = (int)$this->data->get(Plugin::LTI_CURRENT_ID);
-        
         if ($form->getFieldValue(Plugin::LTI_ENABLE)) {
-            if (!$form->getFieldValue(Plugin::LTI_KEY)) {
-                $form->addFieldError(Plugin::LTI_KEY, 'Please enter a LTI Key');
-            }
-            if (Plugin::ltiKeyExists($form->getFieldValue(Plugin::LTI_KEY), $lid)) {
-                $form->addFieldError(Plugin::LTI_KEY, 'This LTI key already exists for another Institution.');
-            }
 
-            if (!$form->getFieldValue(Plugin::LTI_SECRET) && $lid > 0) {
-                //$form->addFieldError(Plugin::LTI_SECRET, 'Please enter a LTI secret code');
-                $form->setFieldValue(Plugin::LTI_SECRET, hash('md5', time()));
-            }
         }
 
         if ($form->hasErrors()) {
             return;
         }
 
-        // unimelb_00002
-        // 1f72a0bac401a3e375e737185817463c
-
-        $consumer = Plugin::getLtiConsumer($this->institution);
         if ($this->data->get(Plugin::LTI_ENABLE)) {
-//            if (!$consumer) {
-//                $consumer = new \IMSGlobal\LTI\ToolProvider\ToolConsumer(null, Plugin::getLtiDataConnector());
-//            }
-//            $consumer->setKey($this->data->get(Plugin::LTI_KEY));
-//            if ($this->data->get(Plugin::LTI_SECRET)) {
-//                $consumer->secret = $this->data->get(Plugin::LTI_SECRET);
-//            }
-//            $consumer->enabled = true;
-//            $consumer->name = $this->institution->name;
-//            $consumer->save();
-
-//            $this->data->set(Plugin::LTI_CURRENT_KEY, $consumer->getKey());
-//            $this->data->set(Plugin::LTI_CURRENT_ID, $consumer->getRecordId());
-//            $this->data->set(Plugin::LTI_SECRET, $consumer->secret);
-            $url = \Tk\Uri::create('/lti/'.$this->institution->getHash().'/launch.html');
-            if ($this->institution->domain)
-                $url = \Tk\Uri::create('http://'.$this->institution->domain.'/lti/launch.html');
-            $this->data->set(Plugin::LTI_URL, $url->setScheme('https')->toString());
 
         } else {
-//            if ($consumer) {
-//                $consumer->enabled = false;
-//                $consumer->save();
-//            }
+
         }
 
         $this->data->save();
         
-        \Tk\Alert::addSuccess('LTI settings saved.');
+        \Tk\Alert::addSuccess('LTI Settings Saved.');
         $event->setRedirect($this->getBackUrl());
         if ($form->getTriggeredEvent()->getName() == 'save') {
             $event->setRedirect(\Tk\Uri::create());
@@ -155,7 +127,39 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
         // Render the form
         $template->prependTemplate('panel', $this->getForm()->getRenderer()->show());
 
+
+        $this->showRow('Tool URL', \Tk\Uri::create($this->getConfig()->getSiteUrl()));
+        $this->showRow('LTI Version', 'LTI 1.3');
+        if ($this->getPlugin()->getData()->get(Plugin::LTI_TOOL_KEY_PUBLIC))
+            $this->showRow('Public Key', sprintf('<pre>%s</pre>', $this->getPlugin()->getData()->get(Plugin::LTI_TOOL_KEY_PUBLIC)), true);
+
+        $this->showRow('Initiate login URL', Plugin::getLtiLoginUrl($this->institution));
+        $this->showRow('Redirection URI(s)', \Tk\Uri::create($this->getConfig()->getSiteUrl()));
+
+
+        if ($this->data->get(Plugin::LTI_ENABLE)) {
+
+
+        } else {
+
+        }
+
+
         return $template;
+    }
+
+    private $rowVar = 'row';
+    protected function showRow($label, $data, $isHtml = false)
+    {
+        if (!$data) return;
+        $row = $this->getTemplate()->getRepeat($this->rowVar);
+        $row->insertText('label', $label.':');
+        if ($isHtml) {
+            $row->insertHtml('data', $data);
+        } else {
+            $row->insertText('data', $data);
+        }
+        $row->appendRepeat();
     }
 
     /**
@@ -166,9 +170,21 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
     public function __makeTemplate()
     {
         $xhtml = <<<XHTML
-<div class="tk-panel" data-panel-title="LTI Settings" data-panel-icon="fa fa-cog" var="panel">
-  <hr/>
-  <p>Includes support for LTI 1.1 and the unofficial extensions to LTI 1.0, as well as the registration process and services of LTI 2.0.</p>
+<div class="row">
+  <div class="col-8">
+    <div class="tk-panel" data-panel-title="LTI v1.3 Settings" data-panel-icon="fa fa-cog" var="panel"></div>
+  </div>
+  <div class="col-4">
+    <div class="tk-panel" data-panel-title="LMS Settings" data-panel-icon="fa fa-cog" var="side-panel">
+      
+        <dl var="dl">
+          <div repeat="row" var="row">
+            <dt var="label"></dt>
+            <dd var="data"></dd>
+          </div>
+        </dl>
+    </div>
+  </div>
 </div>
 XHTML;
 

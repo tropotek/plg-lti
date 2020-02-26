@@ -1,4 +1,7 @@
 <?php
+
+use Tk\Routing\Route;
+
 $config = \App\Config::getInstance();
 
 /** @var \Composer\Autoload\ClassLoader $composer */
@@ -7,21 +10,22 @@ if ($composer)
     $composer->add('Lti\\', dirname(__FILE__));
 
 $routes = $config->getRouteCollection();
-if (!$routes) return;
 
 $params = array();
 
 // LTI launch
-$routes->add('lti-launch', new \Tk\Routing\Route('/lti/index.html', 'Lti\Controller\Launch::doLaunch', $params));
-$routes->add('lti-launch', new \Tk\Routing\Route('/lti/launch.html', 'Lti\Controller\Launch::doLaunch', $params));
-$routes->add('institution-lti-launch', new \Tk\Routing\Route('/lti/{instHash}/launch.html', 'Lti\Controller\Launch::doInsLaunch', $params));
+
+$routes->add('lti-login', Route::create('/lti/login.html', 'Lti\Controller\Login::doDefault'));
+$routes->add('lti-ins-login', Route::create('/lti/{instHash}/login.html', 'Lti\Controller\Login::doInsDefault'));
+$routes->add('lti-launch', Route::create('/lti/launch.html', 'Lti\Controller\Launch::doDefault'));
+$routes->add('lti-ins-launch', Route::create('/lti/{instHash}/launch.html', 'Lti\Controller\Launch::doInsDefault'));
 
 
-$routes->add('lti-admin-settings', new \Tk\Routing\Route('/admin/ltiSettings.html', 'Lti\Controller\SystemSettings::doDefault'));
+$routes->add('lti-admin-settings', Route::create('/admin/ltiSettings.html', 'Lti\Controller\SystemSettings::doDefault'));
+$routes->add('lti-client-ins-settings', Route::create('/client/ltiInstitutionSettings.html', 'Lti\Controller\InstitutionSettings::doDefault'));
+$routes->add('lti-staff-ins-settings', Route::create('/staff/ltiInstitutionSettings.html', 'Lti\Controller\InstitutionSettings::doDefault'));
 
-$routes->add('lti-admin-institution-settings', new \Tk\Routing\Route('/admin/ltiInstitutionSettings.html', 'Lti\Controller\InstitutionSettings::doDefault'));
-$routes->add('lti-client-institution-settings', new \Tk\Routing\Route('/client/ltiInstitutionSettings.html', 'Lti\Controller\InstitutionSettings::doDefault'));
-$routes->add('lti-staff-institution-settings', new \Tk\Routing\Route('/staff/ltiInstitutionSettings.html', 'Lti\Controller\InstitutionSettings::doDefault'));
+
 
 
 

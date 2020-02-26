@@ -5,6 +5,7 @@ namespace Lti;
 use \IMSGlobal\LTI;
 use Tk\Collection;
 use Tk\ConfigTrait;
+use Uni\Db\Institution;
 
 
 class Database implements LTI\Database {
@@ -17,33 +18,50 @@ class Database implements LTI\Database {
     const SID = '_lti';
 
     /**
-     * @var string
-     */
-    private $ltiPath = '';
-
-    /**
      * @var null|Collection
      */
     private $_ltiSession = null;
 
+
     /**
-     * Database constructor.
+     * @param Institution $institution
+     * @throws \Exception
      */
-    public function __construct()
+    public function __construct($institution)
     {
-        $this->ltiPath = $this->getConfig()->getDataPath().'/lti';
+        $this->getLtiSession()->replace($this->makeConfig($institution));
+    }
 
-        if (!is_dir($this->getLtiPath())) {
-            mkdir($this->getLtiPath(), 0777 ,true);
-            mkdir($this->getConfigsPath(), 0777 ,true);
-        }
-
-        $regConfigs = array_diff(scandir($this->getConfigsPath()), array('..', '.', '.DS_Store'));
-        foreach ($regConfigs as $key => $reg) {
-            $regArr = json_decode(file_get_contents($this->getConfigsPath() . '/' . $reg), true);
-            $this->getLtiSession()->replace($regArr);
-            //$_SESSION['iss'] = array_merge($_SESSION['iss'], json_decode(file_get_contents(__DIR__ . "/configs/$reg"), true));
-        }
+    /**
+     * @param Institution $institution
+     * @return array
+     * @throws \Exception
+     */
+    protected function makeConfig($institution)
+    {
+        $data = Plugin::getInstance()->getInstitutionData($institution);
+        $arr = json_decode(sprintf('{
+    "%s" : {
+        "client_id" : "%s",
+        "auth_login_url" : "%s",
+        "auth_token_url" : "%s",
+        "key_set_url" : "%s",
+        "private_key_file" : "",
+        "institutionId" : "%s",
+        "deployment" : [
+            "%s"
+        ]
+    }
+}',
+            $data->get(Plugin::LTI_LMS_PLATFORMID),
+            $data->get(Plugin::LTI_LMS_CLIENTID),
+            $data->get(Plugin::LTI_LMS_AUTHLOGINURL),
+            $data->get(Plugin::LTI_LMS_AUTHTOKENURL),
+            $data->get(Plugin::LTI_LMS_KEYSETURL),
+            $institution->getId(),
+            $data->get(Plugin::LTI_LMS_DEPLOYMENTID)
+        ), true);
+        return $arr;
     }
 
     /**
@@ -53,18 +71,20 @@ class Database implements LTI\Database {
     public function find_registration_by_issuer($iss)
     {
         if (!$this->getLtiSession()->has($iss)) {
+            \Tk\Log::warning('Registration not found for: ' . $iss);
             return false;
         }
-        $ses = $this->getLtiSession()->get($iss);
+        $ses = new Collection($this->getLtiSession()->get($iss));
+        $data = Plugin::getInstance()->getData();
         return LTI\LTI_Registration::new()
-            ->set_auth_login_url($ses['auth_login_url'])
-            ->set_auth_token_url($ses['auth_token_url'])
-            ->set_auth_server($ses['auth_server'])
-            ->set_client_id($ses['client_id'])
-            ->set_key_set_url($ses['key_set_url'])
-            ->set_kid($ses['kid'])
+            ->set_auth_login_url($ses->get('auth_login_url'))
+            ->set_auth_token_url($ses->get('auth_token_url'))
+            ->set_auth_server($ses->get('auth_server'))
+            ->set_client_id($ses->get('client_id'))
+            ->set_key_set_url($ses->get('key_set_url'))
+            ->set_kid($ses->get('kid'))
             ->set_issuer($iss)
-            ->set_tool_private_key($this->privateKey($iss));
+            ->set_tool_private_key($data->get(Plugin::LTI_TOOL_KEY_PRIVATE));
     }
 
     /**
@@ -76,24 +96,10 @@ class Database implements LTI\Database {
     {
         $ses = $this->getLtiSession()->get($iss);
         if (!in_array($deploymentId, $ses['deployment'])) {
+            \Tk\Log::warning('deployment not found for: ' . $iss . ' => ' . $deploymentId);
             return false;
         }
         return LTI\LTI_Deployment::new()->set_deployment_id($deploymentId);
-    }
-
-    /**
-     * @param string $iss
-     * @return false|string
-     * @todo Check the path on this one
-     */
-    private function privateKey($iss)
-    {
-        $ses = $this->getLtiSession()->get($iss);
-
-        $path = $this->getLtiPath().$ses['private_key_file'];
-vd('PrivateKey Path', __DIR__ . $ses['private_key_file'], $path);
-
-        return file_get_contents(__DIR__ . $ses['private_key_file']);
     }
 
     /**
@@ -110,30 +116,6 @@ vd('PrivateKey Path', __DIR__ . $ses['private_key_file'], $path);
             $session->set(self::SID, $this->_ltiSession);
         }
         return $this->_ltiSession;
-    }
-
-    /**
-     * @return string
-     */
-    private function getPrivateKeyPath()
-    {
-        return $this->getLtiPath() . '/key';
-    }
-
-    /**
-     * @return string
-     */
-    private function getConfigsPath()
-    {
-        return $this->getLtiPath() . '/configs';
-    }
-
-    /**
-     * @return string
-     */
-    private function getLtiPath()
-    {
-        return $this->ltiPath;
     }
 
 }

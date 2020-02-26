@@ -4,6 +4,7 @@ namespace Lti\Controller;
 use Dom\Template;
 use Lti\Plugin;
 use Tk\Request;
+use \IMSGlobal\LTI;
 
 /**
  * @author Michael Mifsud <info@tropotek.com>
@@ -18,6 +19,7 @@ class Launch extends \Bs\Controller\Iface
      */
     protected $institution = null;
 
+    private $message = '';
 
     /**
      * @param Request $request
@@ -27,7 +29,7 @@ class Launch extends \Bs\Controller\Iface
     {
         $this->institution = $this->getConfig()->getInstitutionMapper()->findByDomain($request->getTkUri()->getHost());
         if ($this->institution) {
-            $this->doInsLaunch($request, $this->institution->getHash());
+            $this->doInsDefault($request, $this->institution->getHash());
         }
     }
 
@@ -37,9 +39,11 @@ class Launch extends \Bs\Controller\Iface
      * @return \Dom\Template|Template|string
      * @throws \Exception
      */
-    public function doInsLaunch(Request $request, $instHash)
+    public function doInsDefault(Request $request, $instHash)
     {
-        vd($request->all());
+        if (!Plugin::getInstance()->isActive()) {
+            throw new \Tk\NotFoundHttpException('Plugin not active.');
+        }
         if (!$this->institution)
             $this->institution = $this->getConfig()->getInstitutionMapper()->findByHash($instHash);
 
@@ -47,31 +51,77 @@ class Launch extends \Bs\Controller\Iface
             throw new \Tk\NotFoundHttpException('Institution not found.');
         }
 
-//        $this->getConfig()->getSession()->remove(\Lti\Provider::LTI_LAUNCH);    // reset any existing session data
-//
-//        //if (!$request->has('lti_version') || !$request->has('ext_lms')) {     // Removed because Canvas does not have the ext_lms key
-//        if (!$request->has('lti_version')) {
-//            return $this->show();
-//        }
-//
-//        $msg = '';
-//        if(Plugin::getInstance()->isActive()) {
-//            $provider = new \Lti\Provider(Plugin::getLtiDataConnector(), $this->institution, $this->getConfig()->getEventDispatcher());
-//            $_POST['custom_tc_profile_url'] = '';   // Hack to speed up the launch process as we do not need this url
-//            vd($_POST);
-//            $provider->handleRequest();
-//            if ($provider->message) {
-//                $msg .= $provider->message . '<br/>';
-//            }
-//            if ($provider->reason) {
-//                $msg .= $provider->reason . '<br/>';
-//            }
-//            $this->getConfig()->set('lti.provider', $provider);
-//        } else {
-//            $msg = 'LTI is not enabled for this Institution';
-//        }
-//
-//        $this->getTemplate()->insertHtml('message', trim($msg, '<br/>'));
+
+        try {
+
+            $launch = LTI\LTI_Message_Launch::new(new \Lti\Database($this->institution))->validate();
+            if ($launch->is_deep_link_launch()) {
+                // TODO: ?????
+                vd('TODO: Launch is a deep link???');
+            }
+            $this->onLaunch($launch);
+
+        } catch (\Exception $e) {
+            \Tk\Log::error($e->__toString());
+            $this->message = $e->getMessage();
+        }
+    }
+
+
+    /**
+     * Insert code here to handle incoming connections - use the user,
+     * context and resourceLink properties of the class instance
+     * to access the current user, context and resource link.
+     *
+     * The onLaunch method may be used to:
+     *
+     *  - create the user account if it does not already exist (or update it if it does);
+     *  - create any workspace required for the resource link if it does not already exist (or update it if it does);
+     *  - establish a new session for the user (or otherwise log the user into the tool provider application);
+     *  - keep a record of the return URL for the tool consumer (for example, in a session variable);
+     *  - set the URL for the home page of the application so the user may be redirected to it.
+     *
+     * @param LTI\LTI_Message_Launch $launch
+     * @throws \Exception
+     */
+    function onLaunch(LTI\LTI_Message_Launch $launch)
+    {
+        $ltiData = $launch->get_launch_data();
+        //vd($ltiData);
+        if (empty($ltiData['nonce']) || empty($ltiData['https://purl.imsglobal.org/spec/lti/claim/version'])) {
+            throw new \Tk\Exception('Invalid LTI data found!');
+        }
+        if (empty($ltiData['email'])) {
+            throw new \Tk\Exception('User email not found! Please check your LMS configuration.');
+        }
+
+        // Save Lti Launch data
+        $this->getConfig()->getSession()->set(Plugin::LTI_LAUNCH, $ltiData);
+        $adapter = new \Lti\Auth\LtiAdapter($launch, $this->institution);
+
+        $event = new \Tk\Event\AuthEvent($adapter);
+        $this->getConfig()->getEventDispatcher()->dispatch(\Tk\Auth\AuthEvents::LOGIN, $event);
+        $result = $event->getResult();
+
+        if (!$result || !$result->isValid()) {
+            if ($result) {
+                throw new \Tk\Exception(implode("\n", $result->getMessages()));
+            }
+            throw new \Tk\Exception('Cannot connect to LTI interface, please contact your course coordinator.');
+        }
+
+        // Copy the event to avoid propagation issues
+        $sEvent = new \Tk\Event\AuthEvent($adapter);
+        $sEvent->replace($event->all());
+        $sEvent->setResult($event->getResult());
+        $sEvent->setRedirect($event->getRedirect());
+        if (!$sEvent->getRedirect())
+            $sEvent->setRedirect($adapter->getLoginProcessEvent()->getRedirect());
+        $this->getConfig()->getEventDispatcher()->dispatch(\Tk\Auth\AuthEvents::LOGIN_SUCCESS, $sEvent);
+        if ($sEvent->getRedirect())
+            $sEvent->getRedirect()->redirect();
+
+        \Tk\Log::warning('Remember to redirect to a valid LTI page.');
     }
 
     /**
@@ -80,6 +130,10 @@ class Launch extends \Bs\Controller\Iface
     public function show()
     {
         $template = parent::show();
+
+        if ($this->message)
+            $template->insertHtml('message', trim($this->message, '<br/>'));
+
         return $template;
     }
 
@@ -94,11 +148,8 @@ class Launch extends \Bs\Controller\Iface
 <div class="content">
   <div class="container">
   
-    <div class="alert alert-danger" var="row">
-      <!-- button class="close noblock" data-dismiss="alert">&times;</button -->
-      <h4><i choice="icon" var="icon"></i> <strong var="title">LTI Access Error</strong></h4>
-      <span var="message">Sorry, there was an error connecting you to the application</span>
-    </div>
+      <h4><i choice="icon" var="icon"></i> <strong var="title">LTI Launch Error</strong></h4>
+      <p><span var="message">Sorry, there was an error connecting you to the application</span></p>
         
   </div>
 </div>

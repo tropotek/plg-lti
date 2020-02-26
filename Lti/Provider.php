@@ -17,7 +17,6 @@ class Provider
     use ConfigTrait;
 
     const LTI_LAUNCH = 'lti_launch';
-    const LTI_SUBJECT_ID = 'custom_subjectid';
 
     /**
      * @var \Uni\Db\SubjectIface

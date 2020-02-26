@@ -1,6 +1,7 @@
 <?php
 namespace Lti\Auth;
 
+use IMSGlobal\LTI\LTI_Message_Launch;
 use Tk\Auth\Result;
 
 
@@ -12,9 +13,9 @@ use Tk\Auth\Result;
 class LtiAdapter extends \Tk\Auth\Adapter\Iface
 {
     /**
-     * @var \IMSGlobal\LTI\ToolProvider\User
+     * @var LTI_Message_Launch
      */
-    protected $ltiUser = null;
+    protected $launch = null;
 
     /**
      * @var \Uni\Db\InstitutionIface
@@ -24,26 +25,31 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
 
     /**
      * LtiAdapter constructor.
-     * @param \IMSGlobal\LTI\ToolProvider\User $ltiUser
+     * @param LTI_Message_Launch $launch
      * @param \Uni\Db\InstitutionIface $institution
      */
-    public function __construct($ltiUser, $institution)
+    public function __construct($launch, $institution)
     {
         parent::__construct();
-        $this->set('username', $ltiUser->email);
-        $settings = $ltiUser->getResourceLink()->getSettings();
-        if (!empty($settings['custom_canvas_user_login_id']))
-            $this->set('username', $settings['custom_canvas_user_login_id']);
-        $this->ltiUser = $ltiUser;
+        $ltiData = $launch->get_launch_data();
+
+        $username = '';
+        if (!empty($ltiData['email']))
+            list($username, $domain) = explode('@', $ltiData['email']);
+        if (!empty($ltiData['https://purl.imsglobal.org/spec/lti/claim/ext']['user_username']))
+            $username = $ltiData['https://purl.imsglobal.org/spec/lti/claim/ext']['user_username'];
+        $this->set('username', $username);
+
+        $this->launch = $launch;
         $this->institution = $institution;
     }
 
     /**
-     * @return \IMSGlobal\LTI\ToolProvider\User
+     * @return LTI_Message_Launch
      */
-    public function getLtiUser()
+    public function getLaunch()
     {
-        return $this->ltiUser;
+        return $this->launch;
     }
 
     /**
