@@ -69,29 +69,12 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
         $this->getForm()->appendField(new Field\Checkbox(Plugin::LTI_ENABLE))->addCss('tk-input-toggle')->setLabel('Enable LTI')
             ->setCheckboxLabel('Enable the LTI launch URL for LMS systems.');
 
-
-//        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_PLATFORMID))->setLabel('Platform ID')
-//            ->setNotes('This will usually look something like \'http://example.com\'');
-//        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_CLIENTID))->setLabel('Client ID')
-//            ->setNotes('This is the id received in the \'aud\' during a launch');
-//        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_AUTHLOGINURL))->setLabel('Auth Request URL')
-//            ->setNotes('The platform\'s OIDC login endpoint');
-//        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_AUTHTOKENURL))->setLabel('Access Token URL')
-//            ->setNotes('The platform\'s service authorization endpoint');
-//        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_KEYSETURL))->setLabel('Public Key Set URL')
-//            ->setNotes('The platform\'s JWKS endpoint');
-//        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_DEPLOYMENTID))->setLabel('Deployment ID')
-//            ->setNotes('The deployment_id passed by the platform during launch');
-
-
         $this->getForm()->appendField(new Event\Submit('update', array($this, 'doSubmit')));
         $this->getForm()->appendField(new Event\Submit('save', array($this, 'doSubmit')));
         $this->getForm()->appendField(new Event\LinkButton('cancel', $this->getBackUrl()));
 
         $this->getForm()->load($this->data->toArray());
         $this->getForm()->execute();
-
-
 
 
         $this->setTable(\Lti\Table\Platform::create());
@@ -142,14 +125,13 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
         if ($this->getTable())
             $template->prependTemplate('table', $this->getTable()->show());
 
-        $this->showRow('Tool URL', \Tk\Uri::create($this->getConfig()->getSiteUrl()));
+        $this->showRow('Tool URL', \Tk\Uri::create($this->getConfig()->getSiteUrl())->setScheme('https'));
         $this->showRow('LTI Version', 'LTI 1.3');
         if ($this->getPlugin()->getData()->get(Plugin::LTI_TOOL_KEY_PUBLIC))
             $this->showRow('Public Key', sprintf('<pre>%s</pre>', $this->getPlugin()->getData()->get(Plugin::LTI_TOOL_KEY_PUBLIC)), true);
 
         $this->showRow('Initiate login URL', Plugin::getLtiLoginUrl($this->institution));
-        $this->showRow('Whitelist Redirect', Plugin::getLtiLaunchUrl($this->institution));
-        $this->showRow('Redirection URI(s)', \Tk\Uri::create($this->getConfig()->getSiteUrl()));
+        $this->showRow('Redirection URI(s)', Plugin::getLtiLaunchUrl($this->institution));
 
         return $template;
     }

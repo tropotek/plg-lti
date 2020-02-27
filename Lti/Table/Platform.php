@@ -31,7 +31,7 @@ class Platform extends \Bs\TableIface
     {
 
         $this->appendCell(new Cell\Checkbox('id'));
-        $this->appendCell(new Cell\Text('name'))->setLabel('Platform ID');
+        $this->appendCell(new Cell\Text('name'))->setLabel('Platform ID')->setUrl($this->getEditUrl());
         //$this->appendCell(new Cell\Text('clientId'));
         //$this->appendCell(new Cell\Text('authLoginUrl'));
         //$this->appendCell(new Cell\Text('authTokenUrl'));
