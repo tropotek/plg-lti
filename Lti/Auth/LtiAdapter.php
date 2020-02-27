@@ -5,6 +5,7 @@ use IMSGlobal\LTI\LTI_Message_Launch;
 use Lti\Plugin;
 use Tk\Auth\Result;
 use Tk\Event\AuthEvent;
+use Uni\Db\Subject;
 
 
 /**
@@ -78,6 +79,9 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
         if (!$username) {
             return new Result(Result::FAILURE_CREDENTIAL_INVALID, $username, 'Invalid username or password.');
         }
+        if ($username == 'admin') {
+            return new Result(Result::FAILURE_CREDENTIAL_INVALID, $username, 'Administrators cannot log into this system via LTI.');
+        }
         try {
             $this->dispatchLoginProcess();
             if ($this->getLoginProcessEvent()->getResult()) {
@@ -130,17 +134,36 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
 
         // Gather course/subject data
         $subjectCode = '';
+        $courseCode = '';
         $courseId = 0;
         $subjectId = 0;
         if (!empty($ltiData['https://purl.imsglobal.org/spec/lti/claim/lis']['course_section_sourcedid'])) {
             $subjectCode = $ltiData['https://purl.imsglobal.org/spec/lti/claim/lis']['course_section_sourcedid'];
-            $subjectCode = preg_replace('/[^a-z0-9_-]/i', '_', $subjectCode);
-            $subject = $this->getConfig()->getSubjectMapper()->findByCode($subjectCode, $this->getInstitution()->getId());
+            $subjectCode = trim(preg_replace('/[^a-z0-9_-]/i', '_', $subjectCode));
+            /** @var Subject $subject */
+            $subject = $this->getConfig()->getSubjectMapper()->findFiltered(
+                array('code' => $subjectCode, 'institutionId' => $this->getInstitution()->getId())
+            )->current();
+
             if ($subject) {
                 $subjectId = $subject->getId();
                 $courseId = $subject->getCourseId();
+                $courseCode = $subject->getCourse()->getCode();
+            } else {
+                if (preg_match('/^(([A-Z]{4})([0-9]{5}))(\S*)/', $subjectCode, $regs)) {
+                    $courseCode = $regs[1];
+                } else if (preg_match('/^((MERGE|COM)_([0-9]{4}))_([0-9]+)/', $subjectCode, $regs)) {
+                    $courseCode = $regs[1];
+                } else {
+                    $courseCode = $subjectCode;
+                }
+                $course = $this->getConfig()->getCourseMapper()->findFiltered(
+                    array('code' => $courseCode, 'institutionId' => $this->getInstitution()->getId())
+                )->current();
+                if ($course) $courseId = $course->getId();
             }
         }
+
         if (!empty($ltiData['https://purl.imsglobal.org/spec/lti/claim/custom']['courseId'])) {
             $courseId = (int)$ltiData['https://purl.imsglobal.org/spec/lti/claim/custom']['courseId'];
             $course = $this->getConfig()->getCourseMapper()->findFiltered(
@@ -162,18 +185,21 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
         }
 
         $subjectData = array(
-            'id' => $subjectId,         // deprecated (use subjectId)
             'subjectId' => $subjectId,
             'institutionId' => $this->getInstitution()->getId(),
             'courseId' => $courseId,
+            'subjectCode' => $subjectCode,
+            'courseCode' => $courseCode,
             'name' => $ltiData['https://purl.imsglobal.org/spec/lti/claim/context']['title'],
-            'code' => $subjectCode,
             'email' => (!empty($ltiData['email'])) ? $ltiData['email'] : \Tk\Config::getInstance()->get('site.email'),
             'description' => '',
             // TODO: get this info from canvas in the future????
             'dateStart' => \Tk\Date::create(),
             'dateEnd' => \Tk\Date::create()->add(new \DateInterval('P1Y')),
-            'active' => true
+            'active' => true,
+
+            'id' => $subjectId,         // deprecated use subjectId
+            'code' => $subjectCode,     // deprecated use subjectCode
         );
 
         $this->set('subjectData', $subjectData);
