@@ -159,11 +159,11 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
     {
         $xhtml = <<<XHTML
 <div class="row">
-  <div class="col-8">
+  <div class="col-8 col-md-8">
     <div class="tk-panel" data-panel-title="LTI v1.3 Settings" data-panel-icon="fa fa-cog" var="panel"></div>
     <div class="tk-panel" data-panel-title="LTI Registered Learning Platforms" data-panel-icon="fa fa-institution" var="table"></div>
   </div>
-  <div class="col-4">
+  <div class="col-4 col-md-4">
     <div class="tk-panel" data-panel-title="LMS Settings" data-panel-icon="fa fa-cog" var="side-panel">
       
         <dl var="dl">
