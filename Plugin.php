@@ -157,11 +157,11 @@ class Plugin extends \Tk\Plugin\Iface
         $this->getData()->replace($keys);
         $this->getData()->save();
 
-//        if (????) {
-//            $migrate = new \Tk\Util\SqlMigrate($db);
-//            $migrate->setTempPath($config->getTempPath());
-//            $migrate->migrate(dirname(__FILE__) . '/sql');
-//        }
+        if (!$db->hasTable('_lti_platform')) {
+            $migrate = new \Tk\Util\SqlMigrate($db);
+            $migrate->setTempPath($config->getTempPath());
+            $migrate->migrate(dirname(__FILE__) . '/sql');
+        }
     }
 
     /**
