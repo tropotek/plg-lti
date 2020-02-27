@@ -25,6 +25,8 @@ $routes->add('lti-admin-settings', Route::create('/admin/ltiSettings.html', 'Lti
 $routes->add('lti-client-ins-settings', Route::create('/client/ltiInstitutionSettings.html', 'Lti\Controller\InstitutionSettings::doDefault'));
 $routes->add('lti-staff-ins-settings', Route::create('/staff/ltiInstitutionSettings.html', 'Lti\Controller\InstitutionSettings::doDefault'));
 
+$routes->add('lti-client-ins-platform-edit', Route::create('/client/lti/platformEdit.html', 'Lti\Controller\Platform\Edit::doDefault'));
+$routes->add('lti-staff-ins-platform-edit', Route::create('/staff/lti/platformEdit.html', 'Lti\Controller\Platform\Edit::doDefault'));
 
 
 

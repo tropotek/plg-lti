@@ -30,6 +30,11 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
      */
     protected $data = null;
 
+    /**
+     * @var null|\Lti\Table\Platform
+     */
+    protected $table = null;
+
 
     /**
      *
@@ -65,18 +70,18 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
             ->setCheckboxLabel('Enable the LTI launch URL for LMS systems.');
 
 
-        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_PLATFORMID))->setLabel('Platform ID')
-            ->setNotes('This will usually look something like \'http://example.com\'');
-        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_CLIENTID))->setLabel('Client ID')
-            ->setNotes('This is the id received in the \'aud\' during a launch');
-        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_AUTHLOGINURL))->setLabel('Auth Request URL')
-            ->setNotes('The platform\'s OIDC login endpoint');
-        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_AUTHTOKENURL))->setLabel('Access Token URL')
-            ->setNotes('The platform\'s service authorization endpoint');
-        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_KEYSETURL))->setLabel('Public Key Set URL')
-            ->setNotes('The platform\'s JWKS endpoint');
-        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_DEPLOYMENTID))->setLabel('Deployment ID')
-            ->setNotes('The deployment_id passed by the platform during launch');
+//        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_PLATFORMID))->setLabel('Platform ID')
+//            ->setNotes('This will usually look something like \'http://example.com\'');
+//        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_CLIENTID))->setLabel('Client ID')
+//            ->setNotes('This is the id received in the \'aud\' during a launch');
+//        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_AUTHLOGINURL))->setLabel('Auth Request URL')
+//            ->setNotes('The platform\'s OIDC login endpoint');
+//        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_AUTHTOKENURL))->setLabel('Access Token URL')
+//            ->setNotes('The platform\'s service authorization endpoint');
+//        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_KEYSETURL))->setLabel('Public Key Set URL')
+//            ->setNotes('The platform\'s JWKS endpoint');
+//        $this->getForm()->appendField(new Field\Input(Plugin::LTI_LMS_DEPLOYMENTID))->setLabel('Deployment ID')
+//            ->setNotes('The deployment_id passed by the platform during launch');
 
 
         $this->getForm()->appendField(new Event\Submit('update', array($this, 'doSubmit')));
@@ -85,6 +90,19 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
 
         $this->getForm()->load($this->data->toArray());
         $this->getForm()->execute();
+
+
+
+
+        $this->setTable(\Lti\Table\Platform::create());
+        $this->getTable()->setEditUrl(\Uni\Uri::createHomeUrl('/lti/platformEdit.html'));
+        $this->getTable()->init();
+
+        $filter = array(
+            'institutionId' => $this->institution->getId()
+        );
+        $this->getTable()->setList($this->getTable()->findList($filter));
+
 
     }
 
@@ -97,21 +115,9 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
     {
         $values = $form->getValues();
         $this->data->replace($values);
-
-        if ($form->getFieldValue(Plugin::LTI_ENABLE)) {
-
-        }
-
         if ($form->hasErrors()) {
             return;
         }
-
-        if ($this->data->get(Plugin::LTI_ENABLE)) {
-
-        } else {
-
-        }
-
         $this->data->save();
         
         \Tk\Alert::addSuccess('LTI Settings Saved.');
@@ -129,10 +135,12 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
     public function show()
     {
         $template = parent::show();
-        
+
         // Render the form
         $template->prependTemplate('panel', $this->getForm()->getRenderer()->show());
-
+        // Render the form
+        if ($this->getTable())
+            $template->prependTemplate('table', $this->getTable()->show());
 
         $this->showRow('Tool URL', \Tk\Uri::create($this->getConfig()->getSiteUrl()));
         $this->showRow('LTI Version', 'LTI 1.3');
@@ -142,15 +150,6 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
         $this->showRow('Initiate login URL', Plugin::getLtiLoginUrl($this->institution));
         $this->showRow('Whitelist Redirect', Plugin::getLtiLaunchUrl($this->institution));
         $this->showRow('Redirection URI(s)', \Tk\Uri::create($this->getConfig()->getSiteUrl()));
-
-
-        if ($this->data->get(Plugin::LTI_ENABLE)) {
-
-
-        } else {
-
-        }
-
 
         return $template;
     }
@@ -180,6 +179,7 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
 <div class="row">
   <div class="col-8">
     <div class="tk-panel" data-panel-title="LTI v1.3 Settings" data-panel-icon="fa fa-cog" var="panel"></div>
+    <div class="tk-panel" data-panel-title="LTI Registered Learning Platforms" data-panel-icon="fa fa-institution" var="table"></div>
   </div>
   <div class="col-4">
     <div class="tk-panel" data-panel-title="LMS Settings" data-panel-icon="fa fa-cog" var="side-panel">
@@ -196,5 +196,23 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
 XHTML;
 
         return \Dom\Loader::load($xhtml);
+    }
+
+    /**
+     * @return \Lti\Table\Platform|null
+     */
+    public function getTable(): ?\Lti\Table\Platform
+    {
+        return $this->table;
+    }
+
+    /**
+     * @param \Lti\Table\Platform|null $table
+     * @return InstitutionSettings
+     */
+    public function setTable(?\Lti\Table\Platform $table): InstitutionSettings
+    {
+        $this->table = $table;
+        return $this;
     }
 }

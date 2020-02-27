@@ -22,6 +22,11 @@ class Database implements LTI\Database {
      */
     private $_ltiSession = null;
 
+    /**
+     * @var Institution
+     */
+    private $institution = null;
+
 
     /**
      * @param Institution $institution
@@ -29,6 +34,7 @@ class Database implements LTI\Database {
      */
     public function __construct($institution)
     {
+        $this->institution = $institution;
         $this->getLtiSession()->replace($this->makeConfig($institution));
     }
 
@@ -39,8 +45,12 @@ class Database implements LTI\Database {
      */
     protected function makeConfig($institution)
     {
-        $data = Plugin::getInstance()->getInstitutionData($institution);
-        $arr = json_decode(sprintf('{
+        $json = '';
+        $list = \Lti\Db\PlatformMap::create()->findFiltered(array(
+            'institutionId' => $this->getInstitution()->getId()
+        ));
+        foreach ($list as $platform) {
+            $json .= sprintf('
     "%s" : {
         "client_id" : "%s",
         "auth_login_url" : "%s",
@@ -51,21 +61,26 @@ class Database implements LTI\Database {
         "deployment" : [
             "%s"
         ]
-    }
+    },',
+            $platform->getName(),
+            $platform->getClientId(),
+            $platform->getAuthLoginUrl(),
+            $platform->getAuthTokenUrl(),
+            $platform->getKeySetUrl(),
+            $this->getInstitution()->getId(),
+            $platform->getDeploymentId()
+            );
+        }
+        $arr = json_decode(sprintf('{
+%s
 }',
-            $data->get(Plugin::LTI_LMS_PLATFORMID),
-            $data->get(Plugin::LTI_LMS_CLIENTID),
-            $data->get(Plugin::LTI_LMS_AUTHLOGINURL),
-            $data->get(Plugin::LTI_LMS_AUTHTOKENURL),
-            $data->get(Plugin::LTI_LMS_KEYSETURL),
-            $institution->getId(),
-            $data->get(Plugin::LTI_LMS_DEPLOYMENTID)
+            rtrim($json, ',')
         ), true);
         return $arr;
     }
 
     /**
-     * @param string $iss
+     * @param string $iss Platform ID
      * @return bool|LTI\LTI_Registration
      */
     public function find_registration_by_issuer($iss)
@@ -88,7 +103,7 @@ class Database implements LTI\Database {
     }
 
     /**
-     * @param string $iss
+     * @param string $iss Platform ID
      * @param string $deploymentId
      * @return bool|LTI\LTI_Deployment
      */
@@ -116,6 +131,14 @@ class Database implements LTI\Database {
             $session->set(self::SID, $this->_ltiSession);
         }
         return $this->_ltiSession;
+    }
+
+    /**
+     * @return Institution
+     */
+    public function getInstitution(): Institution
+    {
+        return $this->institution;
     }
 
 }
