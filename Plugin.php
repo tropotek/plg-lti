@@ -5,6 +5,7 @@ namespace Lti;
 use Tk\EventDispatcher\EventDispatcher;
 use Uni\Db\Institution;
 use Uni\Db\InstitutionIface;
+use \IMSGlobal\LTI;
 
 
 /**
@@ -63,8 +64,9 @@ class Plugin extends \Tk\Plugin\Iface
      * @return \Tk\Db\Data
      * @throws \Exception
      */
-    public function getInstitutionData($institution)
+    public function getInstitutionData($institution = null)
     {
+        if (!$institution) $institution = \Uni\Config::getInstance()->getInstitution();
         $this->getConfig()->set('institution', $institution);
         return self::$institutionData = \Tk\Db\Data::create(self::getInstance()->getName() . '.institution', $institution->getId());
     }
@@ -75,8 +77,9 @@ class Plugin extends \Tk\Plugin\Iface
      * @param \Uni\Db\InstitutionIface $institution
      * @return bool
      */
-    public static function isEnabled($institution)
+    public static function isEnabled($institution = null)
     {
+        if (!$institution) $institution = \Uni\Config::getInstance()->getInstitution();
         $plugin = self::getInstance();
         try {
             $data = $plugin->getInstitutionData($institution);
@@ -91,28 +94,85 @@ class Plugin extends \Tk\Plugin\Iface
      * @param InstitutionIface $institution
      * @return \Tk\Uri
      */
-    public static function getLtiLoginUrl($institution)
+    public static function getLtiLoginUrl($institution = null)
     {
-        $url = \Tk\Uri::create('/lti/'.$institution->getHash().'/login.html');
-        if ($institution->getDomain())
-            $url = \Tk\Uri::create('/lti/login.html')->setHost($institution->getDomain());
-        $url->setScheme('https')->toString();
-        return $url;
+        return self::createUrl('/login.html');
     }
 
     /**
      * @param InstitutionIface $institution
      * @return \Tk\Uri
      */
-    public static function getLtiLaunchUrl($institution)
+    public static function getLtiLaunchUrl($institution = null)
     {
-        $url = \Tk\Uri::create('/lti/'.$institution->getHash().'/launch.html');
+        return self::createUrl('/launch.html');
+    }
+
+    /**
+     * @param InstitutionIface $institution
+     * @return \Tk\Uri
+     */
+    public static function getJwksUrl($institution = null)
+    {
+        return self::createUrl('/jwks.html');
+    }
+
+    /**
+     * @param string|\Tk\Uri $url
+     * @param InstitutionIface $institution
+     * @return \Tk\Uri
+     */
+    public static function createUrl($url, $institution = null)
+    {
+        if (!$institution) $institution = \Uni\Config::getInstance()->getInstitution();
+        if ($url instanceof \Tk\Uri) {
+            $url = $url->getRelativePath();
+        }
+        $url = \Tk\Uri::create('/lti/'.$institution->getHash().$url);
         if ($institution->getDomain())
-            $url = \Tk\Uri::create('/lti/launch.html')->setHost($institution->getDomain());
+            $url = \Tk\Uri::create('/lti'.$url)->setHost($institution->getDomain());
+
         $url->setScheme('https')->toString();
         return $url;
     }
 
+    /**
+     * @return array
+     */
+    public static function getJwks()
+    {
+        $data = self::getInstance()->getData();
+        $kid = hash('sha256', $data->get(Plugin::LTI_TOOL_KEY_PUBLIC));
+        $jwks = LTI\JWKS_Endpoint::new([
+            $kid => $data->get(Plugin::LTI_TOOL_KEY_PRIVATE)
+        ]);
+        return $jwks->get_public_jwks();
+    }
+
+    /**
+     * Generate an RSA public private key pair
+     * returns array(
+     *    'public'  => '...',
+     *    'private' => '...'
+     * )
+     * @return array
+     */
+    public function generateKeys()
+    {
+        $config = array(
+            "digest_alg" => "sha512",
+            "private_key_bits" => 4096,
+            "private_key_type" => \OPENSSL_KEYTYPE_RSA,
+        );
+        // Create the private and public key
+        $res = openssl_pkey_new($config);
+        // Extract the private key from $res to $privKey
+        openssl_pkey_export($res, $privKey);
+        // Extract the public key from $res to $pubKey
+        $pubKey = openssl_pkey_get_details($res);
+        $pubKey = $pubKey["key"];
+        return array(Plugin::LTI_TOOL_KEY_PUBLIC => $pubKey, Plugin::LTI_TOOL_KEY_PRIVATE => $privKey);
+    }
 
     // ---- \Tk\Plugin\Iface Interface Methods ----
 
@@ -185,31 +245,6 @@ class Plugin extends \Tk\Plugin\Iface
 //            $db->quote('/plugin/' . $this->getName().'/%'));
 //        $db->query($sql);
 
-    }
-
-    /**
-     * Generate an RSA public private key pair
-     * returns array(
-     *    'public'  => '...',
-     *    'private' => '...'
-     * )
-     * @return array
-     */
-    public function generateKeys()
-    {
-        $config = array(
-            "digest_alg" => "sha512",
-            "private_key_bits" => 4096,
-            "private_key_type" => \OPENSSL_KEYTYPE_RSA,
-        );
-        // Create the private and public key
-        $res = openssl_pkey_new($config);
-        // Extract the private key from $res to $privKey
-        openssl_pkey_export($res, $privKey);
-        // Extract the public key from $res to $pubKey
-        $pubKey = openssl_pkey_get_details($res);
-        $pubKey = $pubKey["key"];
-        return array(Plugin::LTI_TOOL_KEY_PUBLIC => $pubKey, Plugin::LTI_TOOL_KEY_PRIVATE => $privKey);
     }
 
     /**

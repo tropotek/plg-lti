@@ -25,7 +25,7 @@ class Launch extends \Bs\Controller\Iface
      * @param Request $request
      * @throws \Exception
      */
-    public function doLaunch(Request $request)
+    public function doDefault(Request $request)
     {
         $this->institution = $this->getConfig()->getInstitutionMapper()->findByDomain($request->getTkUri()->getHost());
         if ($this->institution) {
@@ -82,7 +82,6 @@ class Launch extends \Bs\Controller\Iface
     function onLaunch(LTI\LTI_Message_Launch $launch)
     {
         $ltiData = $launch->get_launch_data();
-        vd($ltiData);
         if (empty($ltiData['nonce']) || empty($ltiData['https://purl.imsglobal.org/spec/lti/claim/version'])) {
             throw new \Tk\Exception('Invalid LTI data found!');
         }

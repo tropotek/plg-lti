@@ -91,12 +91,12 @@ How to generate JWT RS256 key and JWKS:
 
 ## Links
 
-  - [https://docs.moodle.org/dev/LTI_1.3_support]
-  - [https://github.com/IMSGlobal/lti-1-3-php-library]
-  - [https://github.com/IMSGlobal/lti-1-3-php-example-tool]
-  - [http://www.imsglobal.org/spec/lti/v1p3/impl]
-  - [https://github.com/dmitry-viskov/pylti1.3/wiki/Configure-Canvas-as-LTI-1.3-Platform]
-  - [https://github.com/dmitry-viskov/pylti1.3/wiki/How-to-generate-JWT-RS256-key-and-JWKS]
+  - https://docs.moodle.org/dev/LTI_1.3_support
+  - https://github.com/IMSGlobal/lti-1-3-php-library
+  - https://github.com/IMSGlobal/lti-1-3-php-example-tool
+  - http://www.imsglobal.org/spec/lti/v1p3/impl
+  - https://github.com/dmitry-viskov/pylti1.3/wiki/Configure-Canvas-as-LTI-1.3-Platform
+  - https://github.com/dmitry-viskov/pylti1.3/wiki/How-to-generate-JWT-RS256-key-and-JWKS
 
 
 

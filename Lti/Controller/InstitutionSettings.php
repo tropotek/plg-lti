@@ -130,8 +130,10 @@ class InstitutionSettings extends \Uni\Controller\AdminEditIface
         if ($this->getPlugin()->getData()->get(Plugin::LTI_TOOL_KEY_PUBLIC))
             $this->showRow('Public Key', sprintf('<pre>%s</pre>', $this->getPlugin()->getData()->get(Plugin::LTI_TOOL_KEY_PUBLIC)), true);
 
-        $this->showRow('Initiate login URL', Plugin::getLtiLoginUrl($this->institution));
-        $this->showRow('Redirection URI(s)', Plugin::getLtiLaunchUrl($this->institution));
+        $this->showRow('Initiate login URL', Plugin::createUrl('/login', $this->institution));
+        $this->showRow('Redirection URI(s)', Plugin::createUrl('/launch.html', $this->institution));
+        $this->showRow('Public JWKS', \Tk\Uri::create('/lti/jwks.json')->setScheme('https'));
+        $this->showRow('Canvas Config JSON', Plugin::createUrl('/canvas.json', $this->institution));
 
         return $template;
     }

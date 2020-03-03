@@ -20,6 +20,11 @@ $routes->add('lti-ins-login', Route::create('/lti/{instHash}/login.html', 'Lti\C
 $routes->add('lti-launch', Route::create('/lti/launch.html', 'Lti\Controller\Launch::doDefault'));
 $routes->add('lti-ins-launch', Route::create('/lti/{instHash}/launch.html', 'Lti\Controller\Launch::doInsDefault'));
 
+$routes->add('lti-canvas', Route::create('/lti/canvas.json', 'Lti\Controller\Canvas::doDefault'));
+$routes->add('lti-ins-canvas', Route::create('/lti/{instHash}/canvas.json', 'Lti\Controller\Canvas::doInsDefault'));
+$routes->add('lti-jwks', Route::create('/lti/jwks.json', 'Lti\Controller\Jwks::doDefault'));
+
+
 
 $routes->add('lti-admin-settings', Route::create('/admin/ltiSettings.html', 'Lti\Controller\SystemSettings::doDefault'));
 $routes->add('lti-client-ins-settings', Route::create('/client/ltiInstitutionSettings.html', 'Lti\Controller\InstitutionSettings::doDefault'));
