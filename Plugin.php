@@ -91,33 +91,6 @@ class Plugin extends \Tk\Plugin\Iface
     }
 
     /**
-     * @param InstitutionIface $institution
-     * @return \Tk\Uri
-     */
-    public static function getLtiLoginUrl($institution = null)
-    {
-        return self::createUrl('/login.html');
-    }
-
-    /**
-     * @param InstitutionIface $institution
-     * @return \Tk\Uri
-     */
-    public static function getLtiLaunchUrl($institution = null)
-    {
-        return self::createUrl('/launch.html');
-    }
-
-    /**
-     * @param InstitutionIface $institution
-     * @return \Tk\Uri
-     */
-    public static function getJwksUrl($institution = null)
-    {
-        return self::createUrl('/jwks.html');
-    }
-
-    /**
      * @param string|\Tk\Uri $url
      * @param InstitutionIface $institution
      * @return \Tk\Uri

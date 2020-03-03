@@ -35,7 +35,6 @@ class Login extends \Bs\Controller\Iface
     /**
      * @param Request $request
      * @param $instHash
-     * @return \Dom\Template|Template|string
      * @throws \Exception
      */
     public function doInsDefault(Request $request, $instHash)
@@ -53,7 +52,7 @@ class Login extends \Bs\Controller\Iface
         $msg = '';
         try {
             LTI\LTI_OIDC_Login::new(new \Lti\Database($this->institution))
-                ->do_oidc_login_redirect(Plugin::getLtiLaunchUrl($this->institution)->toString())
+                ->do_oidc_login_redirect(Plugin::createUrl('/launch.html', $this->institution)->toString())
                 ->do_redirect();
         } catch (\Exception $e) {
             \Tk\Log::error($e->__toString());
