@@ -1,5 +1,11 @@
 #CHANGELOG#
 
+Ver 3.2.0 [2020-03-11]:
+-------------------------------
+  - Added LTI 1.3 plugin
+  - Merge branch '3.2' of ssh://github.com/tropotek/plg-lti into 3.2
+
+
 Ver 3.0.26 [2020-02-11]:
 -------------------------------
 
