@@ -15,6 +15,7 @@ Add the following to your composer.json file
 ],
 "require": {
     "imsglobal/lti-1p3-tool": "dev-master"
+    "imsglobal/lti-1p3-tool": "*"
 }
 ```
 Run composer install or composer update In your code, you will now be able to use classes in the \IMSGlobal\LTI namespace to access the library.
