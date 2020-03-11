@@ -31,7 +31,7 @@ class AuthHandler implements Subscriber
 
         $ltiData = $adapter->get('ltiData');
         if (!$ltiData) return;
-        
+
         //vd($ltiData);
 
         // Gather user details
@@ -46,10 +46,12 @@ class AuthHandler implements Subscriber
             $username = $ltiData['custom_canvas_user_login_id'];
 
         $userData = array(
+            'authType' => 'lti',
             'institutionId' => $adapter->getInstitution()->getId(),
             'username' => $username,
             'email' => $adapter->getLtiUser()->email,
             'role' => $role,
+            'type' => $role,
             'name' => $adapter->getLtiUser()->fullname,
             'active' => true,
             'lmsUserId' => '',
@@ -151,5 +153,5 @@ class AuthHandler implements Subscriber
             AuthEvents::LOGOUT => array('onLogout', 100)
         );
     }
-    
+
 }
