@@ -47,7 +47,6 @@ class AuthHandler implements Subscriber
             $username = $ltiData['custom_canvas_user_login_id'];
 
         $userData = array(
-            'authType' => 'lti',
             'institutionId' => $adapter->getInstitution()->getId(),
             'username' => $username,
             'email' => $adapter->getLtiUser()->email,
@@ -135,7 +134,7 @@ class AuthHandler implements Subscriber
             'dateStart' => \Tk\Date::create(),
             'dateEnd' => \Tk\Date::create()->add(new \DateInterval('P1Y')),
             'active' => true,
-            
+
             'id' => $subjectId,         // deprecated use subjectId
             'code' => $subjectCode,     // deprecated use subjectCode
         );
