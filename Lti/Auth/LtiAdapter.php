@@ -183,11 +183,11 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
             if (!$course) $courseId = 0;
         }
         if (!empty($ltiData['https://purl.imsglobal.org/spec/lti/claim/custom']['subjectId'])) {
-            $subjectId = (int)$ltiData['https://purl.imsglobal.org/spec/lti/claim/custom']['subjectId'];
             /** @var \Uni\Db\Subject $subject */
-            $subject = $this->getConfig()->getSubjectMapper()->findFiltered(
-                array('id' => $subjectId, 'institutionId' => $this->getInstitution()->getId())
-            )->current();
+            $subject = $this->getConfig()->getSubjectMapper()->findFiltered(array(
+                'id' => $ltiData['https://purl.imsglobal.org/spec/lti/claim/custom']['subjectId'],
+                'institutionId' => $this->getInstitution()->getId()
+            ))->current();
             if ($subject) {
                 $subjectId = $subject->getId();
                 $subjectCode = $subject->getCode();
