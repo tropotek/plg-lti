@@ -34,6 +34,7 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
      * LtiAdapter constructor.
      * @param LTI_Message_Launch $launch
      * @param \Uni\Db\InstitutionIface $institution
+     * @throws \Exception
      */
     public function __construct($launch, $institution)
     {
@@ -68,6 +69,16 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
         return $this->institution;
     }
 
+    /**
+     * @return array
+     */
+    public function getLaunchData()
+    {
+        $data = array();
+        if ($this->getLaunch())
+            $data = $this->getLaunch()->get_launch_data();
+        return $data;
+    }
 
     /**
      * @return Result
@@ -102,7 +113,7 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
     {
         if (!Plugin::isEnabled($this->getInstitution())) return;
 
-        $ltiData = $this->getLaunch()->get_launch_data();
+        $ltiData = $this->getLaunchData();
         if (!$ltiData) return;
 
         // Gather user data
