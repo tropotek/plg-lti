@@ -7,6 +7,7 @@ use Tk\Auth\AuthEvents;
 use Tk\ConfigTrait;
 use Tk\Event\AuthEvent;
 use Tk\Event\Subscriber;
+use Uni\Db\Subject;
 
 
 /**
@@ -80,23 +81,63 @@ class AuthHandler implements Subscriber
             throw new \Tk\Exception('Subject not available, Please contact the LMS administrator.');
         }
 
+        // Gather course/subject data
+        $courseId = 0;
+        $subjectId = 0;
+        $courseCode = '';
         $subjectCode = preg_replace('/[^a-z0-9_-]/i', '_', $ltiData['context_label']);
-        $subject = null;
+
+        /** @var Subject $subject */
+        $subject = $this->getConfig()->getSubjectMapper()->findFiltered(
+            array('code' => $subjectCode, 'institutionId' => $this->getConfig()->getInstitution()->getId())
+        )->current();
+
+        if ($subject) {
+            $subjectId = $subject->getId();
+            $courseId = $subject->getCourseId();
+            $courseCode = $subject->getCourse()->getCode();
+        } else {
+            if (preg_match('/^(([A-Z]{4})([0-9]{5}))(\S*)/', $subjectCode, $regs)) {
+                $courseCode = $regs[1];
+            } else if (preg_match('/^((MERGE|COM)_([0-9]{4}))_([0-9]+)/', $subjectCode, $regs)) {
+                $courseCode = $regs[1];
+            } else {
+                $courseCode = $subjectCode;
+            }
+            $course = $this->getConfig()->getCourseMapper()->findFiltered(
+                array('code' => $courseCode, 'institutionId' => $this->getConfig()->getInstitution()->getId())
+            )->current();
+            if ($course) $courseId = $course->getId();
+        }
 
         // Force subject selection via passed param in the LTI launch url:  {launchUrl}?custom_subjectId=3
-        if (!empty($ltiData['subjectId']) && empty($ltiData[Provider::LTI_SUBJECT_ID])) {
-            $ltiData[Provider::LTI_SUBJECT_ID] = (int)$ltiData['subjectId'];
+        if (!empty($ltiData['subjectId'])) {
+            /** @var \Uni\Db\Subject $subject */
+            $subject = $this->getConfig()->getSubjectMapper()->findFiltered(array(
+                'id' => $ltiData['subjectId'],
+                'institutionId' => $this->getConfig()->getInstitution()->getId()
+            ))->current();
+            if ($subject) {
+                $subjectId = $ltiData[Provider::LTI_SUBJECT_ID] = $subject->getId();
+                $subjectCode = $subject->getCode();
+                $courseId = $subject->getCourseId();
+            }
         }
         $subjectData = array(
-            'id' => !empty($ltiData[Provider::LTI_SUBJECT_ID]) ? (int)$ltiData[Provider::LTI_SUBJECT_ID] : 0,
+            'subjectId' => $subjectId,
             'institutionId' => $adapter->getInstitution()->getId(),
+            'courseId' => $courseId,
             'name' => $ltiData['context_title'],
-            'code' => $subjectCode,
+            'courseCode' => $courseCode,
+            'subjectCode' => $subjectCode,
             'email' => empty($ltiData['lis_person_contact_email_primary']) ? $ltiData['lis_person_contact_email_primary'] : \Tk\Config::getInstance()->get('site.email'),
             'description' => '',
             'dateStart' => \Tk\Date::create(),
             'dateEnd' => \Tk\Date::create()->add(new \DateInterval('P1Y')),
-            'active' => true
+            'active' => true,
+            
+            'id' => $subjectId,         // deprecated use subjectId
+            'code' => $subjectCode,     // deprecated use subjectCode
         );
         $adapter->set('subjectData', $subjectData);
 
