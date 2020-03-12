@@ -1,6 +1,7 @@
 <?php
 namespace Lti\Auth;
 
+use Lti\Provider;
 use Tk\Auth\Result;
 
 
@@ -52,6 +53,14 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
     public function getInstitution()
     {
         return $this->institution;
+    }
+
+    /**
+     * @return array
+     */
+    public function getLaunchData()
+    {
+        return $this->getSession()->get(Provider::LTI_LAUNCH);
     }
 
 
