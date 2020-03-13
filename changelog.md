@@ -1,5 +1,10 @@
 #CHANGELOG#
 
+Ver 3.0.30 [2020-03-13]:
+-------------------------------
+  - Tagging and releasing branch `M	composer.json` with version `3.0.28`.
+
+
 Ver 3.0.28 [2020-02-25]:
 -------------------------------
 
