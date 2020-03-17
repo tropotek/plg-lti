@@ -96,13 +96,7 @@ class AuthHandler implements Subscriber
             $courseId = $subject->getCourseId();
             $courseCode = $subject->getCourse()->getCode();
         } else {
-            if (preg_match('/^(([A-Z]{4})([0-9]{5}))(\S*)/', $subjectCode, $regs)) {
-                $courseCode = $regs[1];
-            } else if (preg_match('/^((MERGE|COM)_([0-9]{4}))_([0-9]+)/', $subjectCode, $regs)) {
-                $courseCode = $regs[1];
-            } else {
-                $courseCode = $subjectCode;
-            }
+            $courseCode = \Uni\Db\Course::makeCourseCode($subjectCode);
             $course = $this->getConfig()->getCourseMapper()->findFiltered(
                 array('code' => $courseCode, 'institutionId' => $this->getConfig()->getInstitution()->getId())
             )->current();
