@@ -41,7 +41,7 @@ class Launch extends \Bs\Controller\Iface
     {
         if (!$this->institution)
             $this->institution = $this->getConfig()->getInstitutionMapper()->findByHash($instHash);
-vd($request->all());
+
         if (!$this->institution) {
             throw new \Tk\NotFoundHttpException('Institution not found.');
         }

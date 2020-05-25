@@ -238,7 +238,7 @@ class Provider extends ToolProvider\ToolProvider
     function onError()
     {
 //        vd($this->getConfig()->getSession()->all());
-        vd($this->getConfig()->getSession()->get(self::LTI_LAUNCH));
+//        vd($this->getConfig()->getSession()->get(self::LTI_LAUNCH));
 //        if ($this->e) {
 //            vdd($this->e->__toString());
 //        }
