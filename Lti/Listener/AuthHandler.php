@@ -138,6 +138,9 @@ class AuthHandler implements Subscriber
         $result = $auth->authenticate($adapter);
         $event->setResult($result);
 
+        // Set for project templates
+        $this->getConfig()->getSession()->set('isLti', true);
+
         $event->stopPropagation();
     }
 
@@ -154,6 +157,7 @@ class AuthHandler implements Subscriber
         if (!empty($ltiSess['launch_presentation_return_url'])) {
             $event->setRedirect(\Tk\Uri::create($ltiSess['launch_presentation_return_url']));
         }
+        $this->getConfig()->getSession()->remove('isLti');
         // Clear the LTI session data
         \Lti\Provider::clearLtiSession();
     }
