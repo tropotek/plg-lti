@@ -150,7 +150,8 @@ class AuthHandler implements Subscriber
      */
     public function onLogout(AuthEvent $event)
     {
-        if (!\Lti\Provider::isLti()) return;
+        //if (!\Lti\Provider::isLti()) return;
+        if (!$this->getConfig()->isLti()) return;
 
         // TODO: handle this redirect in the app if requred
         $ltiSess = \Lti\Provider::getLtiSession();
