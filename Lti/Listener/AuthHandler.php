@@ -157,7 +157,8 @@ class AuthHandler implements Subscriber
         if (!empty($ltiSess['launch_presentation_return_url'])) {
             $event->setRedirect(\Tk\Uri::create($ltiSess['launch_presentation_return_url']));
         }
-        $this->getConfig()->getSession()->remove('isLti');
+        if (!$this->getConfig()->getMasqueradeHandler()->isMasquerading())
+            $this->getConfig()->getSession()->remove('isLti');
         // Clear the LTI session data
         \Lti\Provider::clearLtiSession();
     }
