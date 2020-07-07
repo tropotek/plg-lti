@@ -36,9 +36,13 @@ to load the classes.
 
 ## Introduction
 
+NOTE: If you have issues with invalid timestamp you can try this:
 
+    ALTER TABLE `_lti2_nonce` CHANGE `value` `value` VARCHAR(128) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
+    ALTER TABLE `_lti2_share_key` CHANGE `share_key_id` `share_key_id` VARCHAR(64) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
+    ALTER TABLE `_lti2_tool_proxy` CHANGE `tool_proxy_id` `tool_proxy_id` VARCHAR(64) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
 
-
+Sometimes this is an issue with newer MySQL databases
 
 ## Example LTI launch params
 
