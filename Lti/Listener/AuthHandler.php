@@ -45,6 +45,8 @@ class AuthHandler implements Subscriber
         list($username, $domain) = explode('@', $adapter->getLtiUser()->email);
         if (!empty($ltiData['custom_canvas_user_login_id']))
             $username = $ltiData['custom_canvas_user_login_id'];
+        else if (!empty($ltiData['ext_user_username']))
+            $username = $ltiData['ext_user_username'];
 
         $userData = array(
             'institutionId' => $adapter->getInstitution()->getId(),

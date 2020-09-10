@@ -32,9 +32,11 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
     {
         parent::__construct();
         $this->set('username', $ltiUser->email);
-        $settings = $ltiUser->getResourceLink()->getSettings();
+        $settings = $this->getLaunchData();
         if (!empty($settings['custom_canvas_user_login_id']))
             $this->set('username', $settings['custom_canvas_user_login_id']);
+        else if (!empty($settings['ext_user_username']))
+            $this->set('username', $settings['ext_user_username']);
         $this->ltiUser = $ltiUser;
         $this->institution = $institution;
     }
