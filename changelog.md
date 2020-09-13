@@ -1,5 +1,19 @@
 #CHANGELOG#
 
+Ver 3.0.46 [2020-09-14]:
+-------------------------------
+  - Tagging and releasing branch `3.0` with version `3.0.44`.
+  - Tagging and releasing branch `3.0` with version `3.0.42`.
+  - Tagging and releasing branch `3.0` with version `3.0.40`.
+  - Tagging and releasing branch `3.0` with version `3.0.38`.
+  - Tagging and releasing branch `3.0` with version `3.0.36`.
+  - Fixed Masquerading Lti issue
+  - Tagging and releasing branch `3.0` with version `3.0.34`.
+  - Tagging and releasing branch `3.0` with version `3.0.32`.
+  - Tagging and releasing branch `3.0` with version `3.0.30`.
+  - Tagging and releasing branch `M	composer.json` with version `3.0.28`.
+
+
 Ver 3.0.44 [2020-09-14]:
 -------------------------------
   - Tagging and releasing branch `3.0` with version `3.0.42`.
