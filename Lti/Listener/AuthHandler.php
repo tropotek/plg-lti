@@ -25,10 +25,7 @@ class AuthHandler implements Subscriber
      */
     public function onLogin(AuthEvent $event)
     {
-        $adminEmail = 'your subject coordinator';
-        if ($this->getConfig()->getInstitution() && $this->getConfig()->getInstitution()->getEmail())
-            $adminEmail = sprintf('<a href="mailto:%s">%s</a>.', $this->getConfig()->getInstitution()->getEmail(), $this->getConfig()->getInstitution()->getEmail());
-
+        $adminEmail = $this->getConfig()->getAdminEmailMsg();
 
         /** @var \Lti\Auth\LtiAdapter $adapter */
         $adapter = $event->getAdapter();
