@@ -25,6 +25,11 @@ class AuthHandler implements Subscriber
      */
     public function onLogin(AuthEvent $event)
     {
+        $adminEmail = 'your subject coordinator';
+        if ($this->getConfig()->getInstitution() && $this->getConfig()->getInstitution()->getEmail())
+            $adminEmail = sprintf('<a href="mailto:%s">%s</a>.', $this->getConfig()->getInstitution()->getEmail(), $this->getConfig()->getInstitution()->getEmail());
+
+
         /** @var \Lti\Auth\LtiAdapter $adapter */
         $adapter = $event->getAdapter();
         if (!$adapter instanceof \Lti\Auth\LtiAdapter) return;
@@ -79,7 +84,7 @@ class AuthHandler implements Subscriber
 
         // Find a valid subject object if available
         if (empty($ltiData['context_label'])) {
-            throw new \Tk\Exception('Subject not available, Please contact the LMS administrator.');
+            throw new \Tk\Exception(sprintf('Subject not available, Please contact %s to enable access.', $adminEmail));
         }
 
         // Gather course/subject data
