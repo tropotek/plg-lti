@@ -137,8 +137,11 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
             $userData['nameFirst'] = $ltiData['given_name'];
         if (!empty($ltiData['family_name']))
             $userData['nameLast'] = $ltiData['family_name'];
-        if (!empty($ltiData['name']))
-            $userData['name'] = $ltiData['name'];
+        if (!empty($ltiData['name'])) {
+            list($nf, $nl) = $this->splitName($ltiData['name']);
+            $userData['nameFirst'] = $nf;
+            $userData['nameLast'] = $nl;
+        }
 
         $this->set('userData', $userData);
 
@@ -233,6 +236,18 @@ class LtiAdapter extends \Tk\Auth\Adapter\Iface
             }
         }
         return false;
+    }
+
+    protected function splitName(string $name)
+    {
+        $nf = $name;
+        $nl = '';
+        $name = trim($name);
+        if ( preg_match('/\s/',$name) ) {
+            $nf = substr($name, 0, strpos($name, ' '));
+            $nl = substr($name, strpos($name, ' ') + 1);
+        }
+        return [$nf, $nl];
     }
 }
 /* Moodle Example Launch Data
