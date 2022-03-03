@@ -26,7 +26,7 @@ Or add the following to your composer.json file:
 
 ```json
 {
-  "uom-plg/plg-lti": "~3.2.0"
+  "uom-plg/plg-lti": "~3.4"
 }
 ```
 
