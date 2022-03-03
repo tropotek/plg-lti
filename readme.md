@@ -1,5 +1,10 @@
 # EMS III LTI Plugin
 
+
+### This plugin is deprecated untill we can find another lib to use
+
+
+
 __Project:__ [uom-plg/plg-lti](http://packagist.org/packages/uom-plg/plg-lti)  
 __Published:__ 27 Feb 2020
 __Web:__ <http://www.tropotek.com/>  
