@@ -1,5 +1,14 @@
 #CHANGELOG#
 
+Ver 3.4.0 [2022-03-03]:
+-------------------------------
+  - Tagging and releasing branch `3.2` with version `3.2.4`.
+  - Tagging and releasing branch `3.2` with version `3.2.2`.
+  - Tagging and releasing branch `3.2` with version `3.2.0`.
+  - Added LTI 1.3 plugin
+  - Merge branch '3.2' of ssh://github.com/tropotek/plg-lti into 3.2
+
+
 Ver 3.2.4 [2020-11-09]:
 -------------------------------
 
