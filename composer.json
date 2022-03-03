@@ -1,39 +1,39 @@
 {
-    "name": "uom-plg/plg-lti",
-    "type": "uom-plugin",
-    "description": "LTI Plugin for the tk-uni libs",
-    "keywords":  [
-        "tropotek",
-        "plugin",
-        "EMS III",
-        "lti"
-    ],
-    "time": "2022-03-03",
-    "license": "MIT",
-    "authors":  [
-         {
-            "name": "Michael Mifsud",
-            "homepage": "http://www.tropotek.com/"
-        }
-    ],
-    "autoload":  {
-        "psr-0":  {
-            "Lti\\": ""
-        }
-    },
-    "repositories":  [
-         {
-            "type": "vcs",
-            "url": "https://github.com/IMSGlobal/lti-1-3-php-library"
-        }
-    ],
-    "require":  {
-        "php": "^7.3.0",
-        "imsglobal/lti-1p3-tool": "dev-master"
-    },
-    "extra":  {
-        "branch-alias":  {
-            "dev-master": "3.4.x-dev"
-        }
+  "name": "uom-plg/plg-lti",
+  "type": "uom-plugin",
+  "description": "LTI Plugin for the tk-uni libs",
+  "keywords": [
+    "tropotek",
+    "plugin",
+    "EMS III",
+    "lti"
+  ],
+  "time": "2019-04-09",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Michael Mifsud",
+      "homepage": "http://www.tropotek.com/"
     }
+  ],
+  "autoload": {
+    "psr-0": {
+      "Lti\\": ""
+    }
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/IMSGlobal/lti-1-3-php-library"
+    }
+  ],
+  "require": {
+    "php": "^7.3.0",
+    "imsglobal/lti-1p3-tool": "dev-master"
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "3.4.x-dev"
+    }
+  }
 }
