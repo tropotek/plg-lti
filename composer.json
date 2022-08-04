@@ -1,6 +1,6 @@
 {
-  "name": "uom-plg/plg-lti",
-  "type": "uom-plugin",
+  "name": "ttek-plg/plg-lti",
+  "type": "ttek-plugin",
   "description": "LTI Plugin for the tk-uni libs",
   "keywords": [
     "tropotek",
